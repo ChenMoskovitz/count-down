@@ -123,8 +123,8 @@ body {
     position: absolute;
     bottom: -10%;
 
-    font-size: 24px;
-    filter: blur(0.2px);
+    font-size: 36px;
+    filter: blur(0.1px);
     animation: floatUp linear infinite;
     will-change: transform;
 }
