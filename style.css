@@ -40,12 +40,12 @@ body {
     text-align: center;
 
     /* Glassy pink card */
-    background: rgba(223, 191, 223, 0.17);
+    background: rgba(255, 255, 255, 0.16);
     border-radius: 28px;
     padding: 28px 18px;
 
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 
     box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 
