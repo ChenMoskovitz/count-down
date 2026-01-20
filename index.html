@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Basic metadata -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- PWA-ish / Add-to-Home-Screen support -->
+    <!-- iOS (still useful) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Non-iOS (Chrome etc.) -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#111827" />
+
+    <title>💗 Countdown</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+<!-- Emoji “confetti” container.
+     JS will fill this with spans based on saved emoji settings. -->
+<div class="hearts" aria-hidden="true"></div>
+
+<!-- Main app card -->
+<main class="app">
+    <!-- Settings drawer button -->
+    <button id="openSettings" class="settings-btn" type="button" aria-label="Open settings">
+        ⚙️
+    </button>
+
+    <!-- Titles (editable via settings) -->
+    <h1 id="title">💗💗💗</h1>
+    <p id="subtitle">Only</p>
+
+    <!-- Controls -->
+    <div class="controls">
+        <!-- Date toggle + date input -->
+        <button id="dateBtn" type="button">Change date ⏰</button>
+        <!-- Starts hidden; JS toggles .date-hidden -->
+        <input id="dateInput" type="datetime-local" class="date-hidden" />
+
+        <!-- Background picker -->
+        <button id="bgBtn" type="button">Change background 📸</button>
+        <!-- Hidden file input; button triggers it -->
+        <input id="bgInput" type="file" accept="image/*" class="visually-hidden" />
+    </div>
+
+    <!-- Countdown blocks -->
+    <div class="timer">
+        <div class="unit">
+            <span class="num" id="days">--</span>
+            <small class="label">Days</small>
+        </div>
+
+        <div class="unit">
+            <span class="num" id="hours">--</span>
+            <small class="label">Hours</small>
+        </div>
+
+        <div class="unit">
+            <span class="num" id="minutes">--</span>
+            <small class="label">Minutes</small>
+        </div>
+
+        <div class="unit">
+            <span class="num" id="seconds">--</span>
+            <small class="label">Seconds</small>
+        </div>
+    </div>
+
+    <!-- Extra line you had (fine to keep) -->
+    <p id="subtitle2">yaaa</p>
+
+    <!-- Target date line -->
+    <p class="target" id="targetLine"></p>
+</main>
+
+<!-- Settings overlay (click outside drawer to close) -->
+<div id="settingsOverlay" class="overlay hidden"></div>
+
+<!-- Settings drawer -->
+<aside id="settingsDrawer" class="drawer hidden" aria-hidden="true">
+    <div class="drawer-header">
+        <h2>Settings 💗</h2>
+        <button id="closeSettings" type="button" class="drawer-close" aria-label="Close settings">
+            ✕
+        </button>
+    </div>
+
+    <!-- Title -->
+    <label class="field">
+        <span>Title</span>
+        <input id="titleInput" type="text" placeholder="💗 Counting down to the moment 💗" />
+    </label>
+
+    <!-- Subtitle -->
+    <label class="field">
+        <span>Subtitle</span>
+        <input id="subtitleInput" type="text" placeholder="Every second closer… 🥰" />
+    </label>
+    <!-- subtitle2 -->
+    <label class="field">
+        <span>Extra line (below the timer)</span>
+        <input id="subtitle2Input" type="text" placeholder="yaaa">
+    </label>
+
+
+    <!-- Save / Reset -->
+    <div class="drawer-actions">
+        <button id="saveText" type="button">Save</button>
+        <button id="resetText" type="button" class="secondary">Reset</button>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Confetti emoji list -->
+    <label class="field">
+        <span>Confetti emojis (separate by spaces)</span>
+        <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
+    </label>
+</aside>
+
+<!-- Scripts -->
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+/* =========================================================
+   Base / Reset
+========================================================= */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    /* Center the app card */
+    display: grid;
+    place-items: center;
+
+    /* System font stack */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: white;
+
+    /* Default background (JS can override with a chosen image) */
+    background-image:
+            linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)),
+            url("assets/img.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* iPhone safe-area padding */
+    padding:
+            calc(16px + env(safe-area-inset-top))
+            calc(16px + env(safe-area-inset-right))
+            calc(16px + env(safe-area-inset-bottom))
+            calc(16px + env(safe-area-inset-left));
+}
+
+/* =========================================================
+   App Card
+========================================================= */
+.app {
+    width: min(600px, 100%);
+    min-height: 78vh;
+    text-align: center;
+
+    /* Glassy pink card */
+    background: rgba(223, 191, 223, 0.17);
+    border-radius: 28px;
+    padding: 28px 18px;
+
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+
+    /* Above confetti */
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   Countdown Layout
+========================================================= */
+.timer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.unit {
+    background: rgba(0,0,0,0.22);
+    border-radius: 18px;
+    padding: 14px 10px;
+}
+
+.num {
+    display: block;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.label {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    opacity: 0.85;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.target {
+    margin-top: 16px;
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+/* Mobile (iPhone) layout */
+@media (max-width: 420px) {
+    .timer {
+        grid-template-columns: repeat(2, 1fr); /* 2x2 grid on iPhone */
+        gap: 12px;
+    }
+    .num { font-size: 40px; }
+    h1 { font-size: 26px; }
+}
+
+/* =========================================================
+   Floating Emoji Confetti (behind the card)
+========================================================= */
+.hearts {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+
+    /* Important: confetti should never block clicks */
+    pointer-events: none;
+
+    z-index: 0;
+    opacity: 0.80;
+    font-size: 18px;
+}
+
+/* Each emoji “particle” */
+.hearts span {
+    position: absolute;
+    bottom: -10%;
+
+    font-size: 24px;
+    filter: blur(0.2px);
+    animation: floatUp linear infinite;
+    will-change: transform;
+}
+
+/* Spread them across screen + different speeds/delays
+   NOTE: Your JS currently creates 40 spans.
+   These rules style the first 10. The rest will still float with default animation values.
+   If you want, we can generate left/duration/delay in JS for all spans later. */
+.hearts span:nth-child(1)  { left: 5%;  animation-duration: 14s; animation-delay: 0s;  transform: translateY(0) scale(0.9); }
+.hearts span:nth-child(2)  { left: 15%; animation-duration: 18s; animation-delay: 2s;  transform: translateY(0) scale(1.1); }
+.hearts span:nth-child(3)  { left: 28%; animation-duration: 16s; animation-delay: 4s;  transform: translateY(0) scale(0.8); }
+.hearts span:nth-child(4)  { left: 40%; animation-duration: 20s; animation-delay: 1s;  transform: translateY(0) scale(1.0); }
+.hearts span:nth-child(5)  { left: 52%; animation-duration: 15s; animation-delay: 3s;  transform: translateY(0) scale(0.95); }
+.hearts span:nth-child(6)  { left: 63%; animation-duration: 19s; animation-delay: 5s;  transform: translateY(0) scale(1.05); }
+.hearts span:nth-child(7)  { left: 72%; animation-duration: 17s; animation-delay: 2s;  transform: translateY(0) scale(0.85); }
+.hearts span:nth-child(8)  { left: 82%; animation-duration: 21s; animation-delay: 6s;  transform: translateY(0) scale(1.0); }
+.hearts span:nth-child(9)  { left: 90%; animation-duration: 16s; animation-delay: 1s;  transform: translateY(0) scale(0.9); }
+.hearts span:nth-child(10) { left: 96%; animation-duration: 22s; animation-delay: 4s;  transform: translateY(0) scale(1.1); }
+
+/* Rise + gentle drift + fade */
+@keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.9; }
+    50%  { transform: translateY(-60vh) translateX(18px) rotate(8deg); opacity: 0.8; }
+    100% { transform: translateY(-120vh) translateX(-18px) rotate(-8deg); opacity: 0; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .hearts { display: none; }
+}
+
+/* =========================================================
+   Controls (buttons row)
+========================================================= */
+.controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.controls button {
+    border: 0;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    backdrop-filter: blur(8px);
+}
+
+/* =========================================================
+   Inputs / Helpers
+========================================================= */
+
+/* Hide file input off-screen (still clickable via JS button) */
+.visually-hidden {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+/* Hide date input line until the user clicks "Change date" */
+.date-hidden {
+    display: none !important; /* must override #dateInput { display:block } */
+}
+
+/* Date input style when visible */
+#dateInput {
+    width: min(320px, 90%);
+    margin: 10px auto 0;
+    display: block;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.12);
+    color: white;
+}
+
+/* =========================================================
+   Settings Button + Drawer
+========================================================= */
+
+/* Settings button in top-right of the card */
+.settings-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    border: 0;
+    border-radius: 14px;
+    padding: 10px 12px;
+
+    background: rgba(255,255,255,0.18);
+    color: white;
+    backdrop-filter: blur(8px);
+}
+
+/* Dark overlay behind drawer */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+}
+
+/* Drawer panel */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(340px, 88vw);
+
+    background: rgba(20, 20, 25, 0.92);
+    backdrop-filter: blur(10px);
+
+    z-index: 60;
+    padding: 16px;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.35);
+}
+
+/* Shared hidden utility for overlay/drawer */
+.hidden {
+    display: none !important;
+}
+
+/* Drawer header row */
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.drawer-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+/* Drawer close button */
+.drawer-close {
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 18px;
+    padding: 6px 10px;
+    border-radius: 10px;
+}
+
+/* Drawer fields */
+.field {
+    display: block;
+    margin: 12px 0;
+}
+
+.field span {
+    display: block;
+    font-size: 12px;
+    opacity: 0.85;
+    margin-bottom: 6px;
+}
+
+.field input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.10);
+    color: white;
+}
+
+/* Save/Reset buttons inside drawer */
+.drawer-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.drawer-actions button {
+    flex: 1;
+    border: 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.18);
+    color: white;
+}
+
+.drawer-actions .secondary {
+    background: rgba(255,255,255,0.10);
+}
+
+/* Divider line */
+.divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    margin: 16px 0;
+}
