@@ -31,51 +31,41 @@
         ⚙️
     </button>
 
-    <!-- Titles (editable via settings) -->
-    <h1 id="title">💗💗💗</h1>
-    <p id="subtitle">Only</p>
+    <div class="app-content">
+        <!-- Titles (editable via settings) -->
+        <h1 id="title">💗💗💗</h1>
+        <p id="subtitle">Only</p>
 
-    <!-- Controls -->
-    <div class="controls">
-        <!-- Date toggle + date input -->
-        <button id="dateBtn" type="button">Change date ⏰</button>
-        <!-- Starts hidden; JS toggles .date-hidden -->
-        <input id="dateInput" type="datetime-local" class="date-hidden" />
+        <!-- Countdown blocks -->
+        <div class="timer">
+            <div class="unit">
+                <span class="num" id="days">--</span>
+                <small class="label">Days</small>
+            </div>
 
-        <!-- Background picker -->
-        <button id="bgBtn" type="button">Change background 📸</button>
-        <!-- Hidden file input; button triggers it -->
-        <input id="bgInput" type="file" accept="image/*" class="visually-hidden" />
+            <div class="unit">
+                <span class="num" id="hours">--</span>
+                <small class="label">Hours</small>
+            </div>
+
+            <div class="unit">
+                <span class="num" id="minutes">--</span>
+                <small class="label">Minutes</small>
+            </div>
+
+            <div class="unit">
+                <span class="num" id="seconds">--</span>
+                <small class="label">Seconds</small>
+            </div>
+        </div>
+
+        <!-- Extra line you had (fine to keep) -->
+        <p id="subtitle2">yaaa</p>
+
+        <!-- Target date line -->
+        <p class="target" id="targetLine"></p>
     </div>
 
-    <!-- Countdown blocks -->
-    <div class="timer">
-        <div class="unit">
-            <span class="num" id="days">--</span>
-            <small class="label">Days</small>
-        </div>
-
-        <div class="unit">
-            <span class="num" id="hours">--</span>
-            <small class="label">Hours</small>
-        </div>
-
-        <div class="unit">
-            <span class="num" id="minutes">--</span>
-            <small class="label">Minutes</small>
-        </div>
-
-        <div class="unit">
-            <span class="num" id="seconds">--</span>
-            <small class="label">Seconds</small>
-        </div>
-    </div>
-
-    <!-- Extra line you had (fine to keep) -->
-    <p id="subtitle2">yaaa</p>
-
-    <!-- Target date line -->
-    <p class="target" id="targetLine"></p>
 </main>
 
 <!-- Settings overlay (click outside drawer to close) -->
@@ -91,6 +81,8 @@
     </div>
 
     <!-- Title -->
+    <h3 class="settings-section">Text & Confetti</h3>
+
     <label class="field">
         <span>Title</span>
         <input id="titleInput" type="text" placeholder="💗 Counting down to the moment 💗" />
@@ -107,6 +99,13 @@
         <input id="subtitle2Input" type="text" placeholder="yaaa">
     </label>
 
+    <!-- Confetti emoji list -->
+    <label class="field">
+        <span>Confetti emojis (separate by spaces)</span>
+        <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
+    </label>
+
+    <hr class="divider" />
 
     <!-- Save / Reset -->
     <div class="drawer-actions">
@@ -116,11 +115,22 @@
 
     <hr class="divider" />
 
-    <!-- Confetti emoji list -->
-    <label class="field">
-        <span>Confetti emojis (separate by spaces)</span>
-        <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
-    </label>
+    <h3 class="settings-section">Background & Date</h3>
+
+    <!-- Controls -->
+    <div class="controls">
+        <!-- Date toggle + date input -->
+        <button id="dateBtn" type="button">Change date ⏰</button>
+        <!-- Starts hidden; JS toggles .date-hidden -->
+        <input id="dateInput" type="datetime-local" class="date-hidden" />
+
+        <!-- Background picker -->
+        <button id="bgBtn" type="button">Change background 📸</button>
+        <!-- Hidden file input; button triggers it -->
+        <input id="bgInput" type="file" accept="image/*" class="visually-hidden" />
+    </div>
+
+
 </aside>
 
 <!-- Scripts -->

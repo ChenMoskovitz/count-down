@@ -11,27 +11,15 @@
  *   - Change confetti emoji list (saved)
  * - Uses localStorage so it persists after refresh / Add-to-Home-Screen
  */
-
 /* =========================================================
    1) CONFIG (defaults)
 ========================================================= */
-
-// Default target date/time (viewer local timezone; for Israel, your iPhone will naturally use Israel time)
-let TARGET = new Date("2026-05-05T18:00:00");
-
-// Default UI text
+let DEFAULT_TARGET_DATE = new Date("2026-05-05T18:00:00");
 const DEFAULT_TITLE = "💗 Counting down to the moment 💗";
 const DEFAULT_SUBTITLE = "Every second closer… 🥰";
 const DEFAULT_SUBTITLE2 = "yaaa";
-
-
-// Default confetti emoji list (space-separated)
-const DEFAULT_EMOJIS = "💗 🧗‍♀️ 🥾❄️ 🏕️ 💘";
-
-// How many confetti emoji <span> elements to render
-const CONFETTI_COUNT = 40;
-
-// Background resize settings (helps performance + avoids huge localStorage)
+const DEFAULT_EMOJIS = "💗 ❄️️ 🌼 ☔ ♥️ 💦 🥳 🥰";
+const MAX_CONFETTI_COUNT = 40;
 const BG_MAX_WIDTH = 1080;
 const BG_JPEG_QUALITY = 0.85;
 
@@ -41,12 +29,12 @@ const BG_JPEG_QUALITY = 0.85;
 
 console.log("script loaded ✅");
 
+//TODO : change names of titles to be readable in html and script
 // Main text
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const subtitle2El = document.getElementById("subtitle2");
 const subtitle2Input = document.getElementById("subtitle2Input");
-
 
 // Countdown numbers + target line
 const el = {
@@ -108,26 +96,29 @@ for (const [name, node] of Object.entries(required)) {
 ========================================================= */
 
 // 3.1 Load saved title/subtitle (or defaults)
-const savedTitle = localStorage.getItem("customTitle");
-const savedSubtitle = localStorage.getItem("customSubtitle");
-titleEl.textContent = savedTitle || DEFAULT_TITLE;
-subtitleEl.textContent = savedSubtitle || DEFAULT_SUBTITLE;
-const savedSubtitle2 = localStorage.getItem("customSubtitle2");
-subtitle2El.textContent = savedSubtitle2 || DEFAULT_SUBTITLE2;
-subtitle2Input.value = subtitle2El.textContent;
+titleEl.textContent =
+    localStorage.getItem("customTitle") || DEFAULT_TITLE;
+subtitleEl.textContent =
+    localStorage.getItem("customSubtitle") || DEFAULT_SUBTITLE;
+subtitle2El.textContent =
+    localStorage.getItem("customSubtitle2") || DEFAULT_SUBTITLE2;
 
 // 3.2 Load saved emojis (or default), then build confetti
-const savedEmojis = localStorage.getItem("customEmojis") || DEFAULT_EMOJIS;
-emojiInput.value = savedEmojis;
-applyConfettiEmojis(savedEmojis);
+emojiInput.value =
+    localStorage.getItem("customEmojis") || DEFAULT_EMOJIS;
+applyConfettiEmojis(emojiInput.value);
 
-// 3.3 Load saved target date (or keep default TARGET)
+// 3.3 Load saved target date (or keep default DEFAULT_TARGET_DATE)
 const savedDate = localStorage.getItem("customDate");
-if (savedDate) TARGET = new Date(savedDate);
+if (savedDate) {
+    DEFAULT_TARGET_DATE = new Date(savedDate);
+}
 
-// 3.4 Load saved background (if any)
-const savedBg = localStorage.getItem("customBg");
-if (savedBg) setBackground(savedBg);
+// 3.4 Load saved background
+const savedBackground = localStorage.getItem("customBg");
+if (savedBackground) {
+    setBackground(savedBackground);
+}
 
 // Keep settings inputs in sync with current UI text
 titleInput.value = titleEl.textContent;
@@ -164,24 +155,20 @@ settingsOverlay.addEventListener("click", closeDrawer);
 
 // Save settings: title/subtitle/emojis
 saveText.addEventListener("click", () => {
-    // Title & subtitle: fallback to defaults if user clears the input
+    // Title & subtitle & subtitle2: fallback to defaults if user clears the input
     const newTitle = titleInput.value.trim() || DEFAULT_TITLE;
-    const newSubtitle = subtitleInput.value.trim() || DEFAULT_SUBTITLE;
-
     titleEl.textContent = newTitle;
-    subtitleEl.textContent = newSubtitle;
-
     localStorage.setItem("customTitle", newTitle);
+    const newSubtitle = subtitleInput.value.trim() || DEFAULT_SUBTITLE;
+    subtitleEl.textContent = newSubtitle;
     localStorage.setItem("customSubtitle", newSubtitle);
-
+    const newSubtitle2 = subtitle2Input.value.trim() || DEFAULT_SUBTITLE2;
+    subtitle2El.textContent = newSubtitle2;
+    localStorage.setItem("customSubtitle2", newSubtitle2);
     // Emojis: fallback to defaults if empty
     const emojis = emojiInput.value.trim() || DEFAULT_EMOJIS;
     localStorage.setItem("customEmojis", emojis);
     applyConfettiEmojis(emojis);
-    const newSubtitle2 = subtitle2Input.value.trim() || DEFAULT_SUBTITLE2;
-
-    subtitle2El.textContent = newSubtitle2;
-    localStorage.setItem("customSubtitle2", newSubtitle2);
 
     closeDrawer();
 });
@@ -189,15 +176,16 @@ saveText.addEventListener("click", () => {
 // Reset settings back to defaults (does NOT reset date/background)
 resetText.addEventListener("click", () => {
     titleEl.textContent = DEFAULT_TITLE;
-    subtitleEl.textContent = DEFAULT_SUBTITLE;
-
     titleInput.value = DEFAULT_TITLE;
+    localStorage.removeItem("customTitle");
+
+    subtitleEl.textContent = DEFAULT_SUBTITLE;
     subtitleInput.value = DEFAULT_SUBTITLE;
+    localStorage.removeItem("customSubtitle");
+
     subtitle2El.textContent = DEFAULT_SUBTITLE2;
     subtitle2Input.value = DEFAULT_SUBTITLE2;
     localStorage.removeItem("customSubtitle2");
-    localStorage.removeItem("customTitle");
-    localStorage.removeItem("customSubtitle");
 
     emojiInput.value = DEFAULT_EMOJIS;
     localStorage.removeItem("customEmojis");
@@ -244,27 +232,22 @@ function setBackground(dataUrl) {
 function resizeImageToDataUrl(img, maxWidth, jpegQuality) {
     let width = img.width;
     let height = img.height;
-
     // Only shrink if needed (never enlarge)
     if (width > maxWidth) {
         height = Math.round(height * (maxWidth / width));
         width = maxWidth;
     }
-
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
-
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
-
     return canvas.toDataURL("image/jpeg", jpegQuality);
 }
 
 /* =========================================================
    6) CHANGE DATE LOGIC (input hidden until button click)
 ========================================================= */
-
 /**
  * Behavior:
  * - Clicking "Change date" toggles the date input line (show/hide).
@@ -274,9 +257,9 @@ dateBtn.addEventListener("click", () => {
     const isHidden = dateInput.classList.contains("date-hidden");
 
     if (isHidden) {
-        // Show input and prefill it with current TARGET (but DON'T open picker)
+        // Show input and prefill it with current DEFAULT_TARGET_DATE (but DON'T open picker)
         dateInput.classList.remove("date-hidden");
-        dateInput.value = toDatetimeLocalValue(TARGET);
+        dateInput.value = toDatetimeLocalValue(DEFAULT_TARGET_DATE);
     } else {
         // Hide input and close any open picker UI
         dateInput.classList.add("date-hidden");
@@ -284,15 +267,15 @@ dateBtn.addEventListener("click", () => {
     }
 });
 
-// When user selects a new date/time -> update TARGET -> save -> refresh countdown
+// When user selects a new date/time -> update DEFAULT_TARGET_DATE -> save -> refresh countdown
 dateInput.addEventListener("change", () => {
     if (!dateInput.value) return;
 
     // datetime-local returns a local time string (no timezone),
     // so new Date(...) will interpret it in the viewer's local timezone.
-    TARGET = new Date(dateInput.value);
+    DEFAULT_TARGET_DATE = new Date(dateInput.value);
 
-    localStorage.setItem("customDate", TARGET.toISOString());
+    localStorage.setItem("customDate", DEFAULT_TARGET_DATE.toISOString());
     renderCountdown();
 });
 
@@ -318,10 +301,10 @@ function pad2(n) {
 // Update UI once per second
 function renderCountdown() {
     const now = new Date();
-    const diffMs = TARGET - now;
+    const diffMs = DEFAULT_TARGET_DATE - now;
 
     // Show target line (user-friendly string)
-    el.targetLine.textContent = "Target: " + TARGET.toLocaleString();
+    el.targetLine.textContent = "Target: " + DEFAULT_TARGET_DATE.toLocaleString();
 
     // If countdown finished
     if (diffMs <= 0) {
@@ -368,7 +351,7 @@ function applyConfettiEmojis(emojiString) {
 
     // Rebuild confetti spans
     container.innerHTML = "";
-    for (let i = 0; i < CONFETTI_COUNT; i++) {
+    for (let i = 0; i < MAX_CONFETTI_COUNT; i++) {
         const span = document.createElement("span");
         span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
         container.appendChild(span);
