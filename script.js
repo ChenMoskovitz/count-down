@@ -2,26 +2,49 @@
 
 /**
  * Countdown + Settings app (single-file JS)
+ * FIXED (iPhone 1-hour bug):
+ * - We no longer save the date using toISOString() (UTC).
+ * - Instead we save the target date as a NUMBER (milliseconds since epoch).
+ *   That preserves the exact moment consistently across iPhone/Android/Desktop.
+ *
  * Features:
  * - Countdown to a target date
  * - Change date (toggle input visibility)
  * - Change background image (from file picker) + auto-resize for smoother performance
  * - Settings drawer:
- *   - Change title + subtitle (saved)
+ *   - Change title + subtitle + extra line (saved)
  *   - Change confetti emoji list (saved)
  * - Uses localStorage so it persists after refresh / Add-to-Home-Screen
  */
+
 /* =========================================================
    1) CONFIG (defaults)
 ========================================================= */
-let DEFAULT_TARGET_DATE = new Date("2026-05-05T18:00:00");
+
+// ✅ Safer than parsing an ISO-like string in Safari: new Date(year, monthIndex, day, hour, min, sec)
+// monthIndex is 0-based (May = 4)
+let DEFAULT_TARGET_DATE = new Date(2026, 4, 5, 18, 0, 0);
+
 const DEFAULT_TITLE = "💗 Counting down to the moment 💗";
 const DEFAULT_SUBTITLE = "Every second closer… 🥰";
 const DEFAULT_SUBTITLE2 = "yaaa";
 const DEFAULT_EMOJIS = "💗 ❄️️ 🌼 ☔ ♥️ 💦 🥳 🥰";
+
 const MAX_CONFETTI_COUNT = 40;
 const BG_MAX_WIDTH = 1080;
 const BG_JPEG_QUALITY = 0.85;
+
+// ✅ Storage keys (kept in one place to avoid typos)
+const LS = {
+    title: "customTitle",
+    subtitle: "customSubtitle",
+    subtitle2: "customSubtitle2",
+    emojis: "customEmojis",
+    bg: "customBg",
+
+    // ✅ NEW: save target as milliseconds (not ISO string)
+    dateMs: "customDateMs",
+};
 
 /* =========================================================
    2) DOM ELEMENTS (get references once)
@@ -29,7 +52,6 @@ const BG_JPEG_QUALITY = 0.85;
 
 console.log("script loaded ✅");
 
-//TODO : change names of titles to be readable in html and script
 // Main text
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
@@ -45,7 +67,7 @@ const el = {
     targetLine: document.getElementById("targetLine"),
 };
 
-// Date controls (button toggles input visibility)
+// Date controls
 const dateBtn = document.getElementById("dateBtn");
 const dateInput = document.getElementById("dateInput");
 
@@ -70,6 +92,8 @@ const resetText = document.getElementById("resetText");
 const required = {
     titleEl,
     subtitleEl,
+    subtitle2El,
+    subtitle2Input,
     ...el,
     dateBtn,
     dateInput,
@@ -81,7 +105,6 @@ const required = {
     settingsOverlay,
     titleInput,
     subtitleInput,
-    subtitle2Input,
     emojiInput,
     saveText,
     resetText,
@@ -95,27 +118,26 @@ for (const [name, node] of Object.entries(required)) {
    3) LOAD SAVED SETTINGS (localStorage)
 ========================================================= */
 
-// 3.1 Load saved title/subtitle (or defaults)
-titleEl.textContent =
-    localStorage.getItem("customTitle") || DEFAULT_TITLE;
-subtitleEl.textContent =
-    localStorage.getItem("customSubtitle") || DEFAULT_SUBTITLE;
-subtitle2El.textContent =
-    localStorage.getItem("customSubtitle2") || DEFAULT_SUBTITLE2;
+// 3.1 Load saved title/subtitle/subtitle2 (or defaults)
+titleEl.textContent = localStorage.getItem(LS.title) || DEFAULT_TITLE;
+subtitleEl.textContent = localStorage.getItem(LS.subtitle) || DEFAULT_SUBTITLE;
+subtitle2El.textContent = localStorage.getItem(LS.subtitle2) || DEFAULT_SUBTITLE2;
 
-// 3.2 Load saved emojis (or default), then build confetti
-emojiInput.value =
-    localStorage.getItem("customEmojis") || DEFAULT_EMOJIS;
+// 3.2 Load saved emojis (or default), then build confetti immediately
+emojiInput.value = localStorage.getItem(LS.emojis) || DEFAULT_EMOJIS;
 applyConfettiEmojis(emojiInput.value);
 
-// 3.3 Load saved target date (or keep default DEFAULT_TARGET_DATE)
-const savedDate = localStorage.getItem("customDate");
-if (savedDate) {
-    DEFAULT_TARGET_DATE = new Date(savedDate);
+// 3.3 ✅ Load saved target date (milliseconds) (or keep default)
+const savedDateMs = localStorage.getItem(LS.dateMs);
+if (savedDateMs) {
+    const ms = Number(savedDateMs);
+    if (!Number.isNaN(ms)) {
+        DEFAULT_TARGET_DATE = new Date(ms);
+    }
 }
 
 // 3.4 Load saved background
-const savedBackground = localStorage.getItem("customBg");
+const savedBackground = localStorage.getItem(LS.bg);
 if (savedBackground) {
     setBackground(savedBackground);
 }
@@ -144,8 +166,8 @@ function closeDrawer() {
 openSettings.addEventListener("click", () => {
     titleInput.value = titleEl.textContent;
     subtitleInput.value = subtitleEl.textContent;
-    emojiInput.value = localStorage.getItem("customEmojis") || DEFAULT_EMOJIS;
     subtitle2Input.value = subtitle2El.textContent;
+    emojiInput.value = localStorage.getItem(LS.emojis) || DEFAULT_EMOJIS;
     openDrawer();
 });
 
@@ -153,21 +175,26 @@ openSettings.addEventListener("click", () => {
 closeSettings.addEventListener("click", closeDrawer);
 settingsOverlay.addEventListener("click", closeDrawer);
 
-// Save settings: title/subtitle/emojis
+// Save settings: title/subtitle/subtitle2/emojis
 saveText.addEventListener("click", () => {
-    // Title & subtitle & subtitle2: fallback to defaults if user clears the input
+    // Title
     const newTitle = titleInput.value.trim() || DEFAULT_TITLE;
     titleEl.textContent = newTitle;
-    localStorage.setItem("customTitle", newTitle);
+    localStorage.setItem(LS.title, newTitle);
+
+    // Subtitle
     const newSubtitle = subtitleInput.value.trim() || DEFAULT_SUBTITLE;
     subtitleEl.textContent = newSubtitle;
-    localStorage.setItem("customSubtitle", newSubtitle);
+    localStorage.setItem(LS.subtitle, newSubtitle);
+
+    // Extra line
     const newSubtitle2 = subtitle2Input.value.trim() || DEFAULT_SUBTITLE2;
     subtitle2El.textContent = newSubtitle2;
-    localStorage.setItem("customSubtitle2", newSubtitle2);
-    // Emojis: fallback to defaults if empty
+    localStorage.setItem(LS.subtitle2, newSubtitle2);
+
+    // Emojis
     const emojis = emojiInput.value.trim() || DEFAULT_EMOJIS;
-    localStorage.setItem("customEmojis", emojis);
+    localStorage.setItem(LS.emojis, emojis);
     applyConfettiEmojis(emojis);
 
     closeDrawer();
@@ -177,18 +204,18 @@ saveText.addEventListener("click", () => {
 resetText.addEventListener("click", () => {
     titleEl.textContent = DEFAULT_TITLE;
     titleInput.value = DEFAULT_TITLE;
-    localStorage.removeItem("customTitle");
+    localStorage.removeItem(LS.title);
 
     subtitleEl.textContent = DEFAULT_SUBTITLE;
     subtitleInput.value = DEFAULT_SUBTITLE;
-    localStorage.removeItem("customSubtitle");
+    localStorage.removeItem(LS.subtitle);
 
     subtitle2El.textContent = DEFAULT_SUBTITLE2;
     subtitle2Input.value = DEFAULT_SUBTITLE2;
-    localStorage.removeItem("customSubtitle2");
+    localStorage.removeItem(LS.subtitle2);
 
     emojiInput.value = DEFAULT_EMOJIS;
-    localStorage.removeItem("customEmojis");
+    localStorage.removeItem(LS.emojis);
     applyConfettiEmojis(DEFAULT_EMOJIS);
 });
 
@@ -213,7 +240,7 @@ bgInput.addEventListener("change", () => {
         img.onload = () => {
             const resizedDataUrl = resizeImageToDataUrl(img, BG_MAX_WIDTH, BG_JPEG_QUALITY);
             setBackground(resizedDataUrl);
-            localStorage.setItem("customBg", resizedDataUrl);
+            localStorage.setItem(LS.bg, resizedDataUrl);
         };
 
         img.src = reader.result;
@@ -232,16 +259,20 @@ function setBackground(dataUrl) {
 function resizeImageToDataUrl(img, maxWidth, jpegQuality) {
     let width = img.width;
     let height = img.height;
+
     // Only shrink if needed (never enlarge)
     if (width > maxWidth) {
         height = Math.round(height * (maxWidth / width));
         width = maxWidth;
     }
+
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
+
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, width, height);
+
     return canvas.toDataURL("image/jpeg", jpegQuality);
 }
 
@@ -257,7 +288,7 @@ dateBtn.addEventListener("click", () => {
     const isHidden = dateInput.classList.contains("date-hidden");
 
     if (isHidden) {
-        // Show input and prefill it with current DEFAULT_TARGET_DATE (but DON'T open picker)
+        // Show input and prefill it with current date (but DON'T force open picker)
         dateInput.classList.remove("date-hidden");
         dateInput.value = toDatetimeLocalValue(DEFAULT_TARGET_DATE);
     } else {
@@ -267,15 +298,20 @@ dateBtn.addEventListener("click", () => {
     }
 });
 
-// When user selects a new date/time -> update DEFAULT_TARGET_DATE -> save -> refresh countdown
+// When user selects a new date/time -> update -> save -> refresh countdown
 dateInput.addEventListener("change", () => {
     if (!dateInput.value) return;
 
-    // datetime-local returns a local time string (no timezone),
-    // so new Date(...) will interpret it in the viewer's local timezone.
-    DEFAULT_TARGET_DATE = new Date(dateInput.value);
+    // datetime-local returns a local time string (no timezone)
+    // new Date("YYYY-MM-DDTHH:mm") is treated as LOCAL time by browsers.
+    const next = new Date(dateInput.value);
+    if (Number.isNaN(next.getTime())) return;
 
-    localStorage.setItem("customDate", DEFAULT_TARGET_DATE.toISOString());
+    DEFAULT_TARGET_DATE = next;
+
+    // ✅ FIX: store milliseconds (not ISO UTC)
+    localStorage.setItem(LS.dateMs, String(DEFAULT_TARGET_DATE.getTime()));
+
     renderCountdown();
 });
 
