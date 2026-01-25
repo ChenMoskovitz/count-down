@@ -2,26 +2,24 @@
 
 /**
  * Countdown + Settings app (single-file JS)
- * FIXED (iPhone 1-hour bug):
- * - We no longer save the date using toISOString() (UTC).
- * - Instead we save the target date as a NUMBER (milliseconds since epoch).
- *   That preserves the exact moment consistently across iPhone/Android/Desktop.
  *
- * Features:
- * - Countdown to a target date
- * - Change date (toggle input visibility)
- * - Change background image (from file picker) + auto-resize for smoother performance
- * - Settings drawer:
- *   - Change title + subtitle + extra line (saved)
- *   - Change confetti emoji list (saved)
- * - Uses localStorage so it persists after refresh / Add-to-Home-Screen
+ * FIXED (iPhone 1-hour bug):
+ * - We save the target date as a NUMBER (milliseconds since epoch), not ISO (UTC).
+ *
+ * FIXED (subtitle2 bug):
+ * - "Since last opened" now uses #sinceLine ONLY (not subtitle2).
+ * - subtitle2 stays purely user-customizable in Settings.
+ *
+ * FIXED (checkbox removal):
+ * - Removed allowEmptyText logic completely.
+ * - Empty text is ALWAYS allowed (saving "" is valid).
  */
 
 /* =========================================================
    1) CONFIG (defaults)
 ========================================================= */
 
-// ✅ Safer than parsing an ISO-like string in Safari: new Date(year, monthIndex, day, hour, min, sec)
+// Safer than parsing an ISO-like string in Safari: new Date(year, monthIndex, day, hour, min, sec)
 // monthIndex is 0-based (May = 4)
 let DEFAULT_TARGET_DATE = new Date(2026, 4, 5, 18, 0, 0);
 
@@ -34,7 +32,7 @@ const MAX_CONFETTI_COUNT = 40;
 const BG_MAX_WIDTH = 1080;
 const BG_JPEG_QUALITY = 0.85;
 
-// ✅ Storage keys (kept in one place to avoid typos)
+// Storage keys (kept in one place to avoid typos)
 const LS = {
     title: "customTitle",
     subtitle: "customSubtitle",
@@ -42,65 +40,28 @@ const LS = {
     emojis: "customEmojis",
     bg: "customBg",
 
-    // ✅ NEW: save target as milliseconds (not ISO string)
+    // Save target as milliseconds (not ISO string)
     dateMs: "customDateMs",
+
+    // "Since last opened"
+    lastOpenedMs: "lastOpenedMs",
 };
-// --- "Since last opened" (Step 1): read previous open time ---
-const lastOpenedMs = Number(localStorage.getItem("lastOpenedMs") || "0");
 
-// --- (Step 1): store current open time for next visit ---
-localStorage.setItem("lastOpenedMs", String(Date.now()));
+/* =========================================================
+   1.5) "SINCE LAST OPENED" DATA (read previous -> store now)
+========================================================= */
 
-// --- "Since last opened" (Step 2): calculate time away ---
+// Read previous open time (0 if none)
+const lastOpenedMs = Number(localStorage.getItem(LS.lastOpenedMs) || "0");
+
+// Store current open time immediately for next visit
+localStorage.setItem(LS.lastOpenedMs, String(Date.now()));
+
+// Compute time away
 let timeAwayMs = 0;
-
 if (lastOpenedMs > 0) {
     timeAwayMs = Date.now() - lastOpenedMs;
 }
-
-// --- "Since last opened" (Step 3): format time nicely ---
-function formatTimeAway(ms) {
-    const seconds = Math.floor(ms / 1000);
-
-    if (seconds < 60) {
-        return `${seconds} seconds`;
-    }
-
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) {
-        return `${minutes} minute${minutes === 1 ? "" : "s"}`;
-    }
-
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-        return `${hours} hour${hours === 1 ? "" : "s"}`;
-    }
-
-    const days = Math.floor(hours / 24);
-    return `${days} day${days === 1 ? "" : "s"}`;
-}
-if (timeAwayMs > 0) {
-    console.log("Formatted:", formatTimeAway(timeAwayMs));
-}
-function showSinceLastOpened() {
-    if (timeAwayMs <= 0) return;
-    if (timeAwayMs < 5000) return;
-
-    const pretty = formatTimeAway(timeAwayMs);
-
-    // Force visible first
-    subtitle2El.style.opacity = "1";
-    subtitle2El.textContent = `While you were away, ${pretty} passed 💗`;
-
-    // Force browser to register the visible state
-    requestAnimationFrame(() => {
-        setTimeout(() => {
-            subtitle2El.style.opacity = "0";
-        }, 5000);
-    });
-}
-
-
 
 /* =========================================================
    2) DOM ELEMENTS (get references once)
@@ -112,6 +73,11 @@ console.log("script loaded ✅");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const subtitle2El = document.getElementById("subtitle2");
+const sinceLineEl = document.getElementById("sinceLine");
+
+// Settings inputs (text)
+const titleInput = document.getElementById("titleInput");
+const subtitleInput = document.getElementById("subtitleInput");
 const subtitle2Input = document.getElementById("subtitle2Input");
 
 // Countdown numbers + target line
@@ -137,9 +103,7 @@ const closeSettings = document.getElementById("closeSettings");
 const settingsDrawer = document.getElementById("settingsDrawer");
 const settingsOverlay = document.getElementById("settingsOverlay");
 
-// Settings inputs/buttons
-const titleInput = document.getElementById("titleInput");
-const subtitleInput = document.getElementById("subtitleInput");
+// Settings buttons
 const emojiInput = document.getElementById("emojiInput");
 const saveText = document.getElementById("saveText");
 const resetText = document.getElementById("resetText");
@@ -149,19 +113,26 @@ const required = {
     titleEl,
     subtitleEl,
     subtitle2El,
-    subtitle2Input,
+    sinceLineEl,
+
     ...el,
+
     dateBtn,
     dateInput,
+
     bgBtn,
     bgInput,
+
     openSettings,
     closeSettings,
     settingsDrawer,
     settingsOverlay,
+
     titleInput,
     subtitleInput,
+    subtitle2Input,
     emojiInput,
+
     saveText,
     resetText,
 };
@@ -174,16 +145,22 @@ for (const [name, node] of Object.entries(required)) {
    3) LOAD SAVED SETTINGS (localStorage)
 ========================================================= */
 
+// Helper: use default only if key is missing (keeps "" as valid)
+function getSavedOrDefault(key, defaultValue) {
+    const v = localStorage.getItem(key);
+    return v === null ? defaultValue : v; // IMPORTANT: keeps "" (empty) as valid
+}
+
 // 3.1 Load saved title/subtitle/subtitle2 (or defaults)
-titleEl.textContent = localStorage.getItem(LS.title) || DEFAULT_TITLE;
-subtitleEl.textContent = localStorage.getItem(LS.subtitle) || DEFAULT_SUBTITLE;
-subtitle2El.textContent = localStorage.getItem(LS.subtitle2) || DEFAULT_SUBTITLE2;
+titleEl.textContent = getSavedOrDefault(LS.title, DEFAULT_TITLE);
+subtitleEl.textContent = getSavedOrDefault(LS.subtitle, DEFAULT_SUBTITLE);
+subtitle2El.textContent = getSavedOrDefault(LS.subtitle2, DEFAULT_SUBTITLE2);
 
 // 3.2 Load saved emojis (or default), then build confetti immediately
 emojiInput.value = localStorage.getItem(LS.emojis) || DEFAULT_EMOJIS;
 applyConfettiEmojis(emojiInput.value);
 
-// 3.3 ✅ Load saved target date (milliseconds) (or keep default)
+// 3.3 Load saved target date (milliseconds) (or keep default)
 const savedDateMs = localStorage.getItem(LS.dateMs);
 if (savedDateMs) {
     const ms = Number(savedDateMs);
@@ -197,10 +174,6 @@ const savedBackground = localStorage.getItem(LS.bg);
 if (savedBackground) {
     setBackground(savedBackground);
 }
-
-// Keep settings inputs in sync with current UI text
-titleInput.value = titleEl.textContent;
-subtitleInput.value = subtitleEl.textContent;
 
 /* =========================================================
    4) SETTINGS DRAWER (open/close + save/reset)
@@ -232,23 +205,21 @@ closeSettings.addEventListener("click", closeDrawer);
 settingsOverlay.addEventListener("click", closeDrawer);
 
 // Save settings: title/subtitle/subtitle2/emojis
+// ✅ Empty is ALWAYS allowed now.
 saveText.addEventListener("click", () => {
-    // Title
-    const newTitle = titleInput.value.trim() || DEFAULT_TITLE;
+    const newTitle = titleInput.value.trim();
+    const newSubtitle = subtitleInput.value.trim();
+    const newSubtitle2 = subtitle2Input.value.trim();
+
     titleEl.textContent = newTitle;
-    localStorage.setItem(LS.title, newTitle);
-
-    // Subtitle
-    const newSubtitle = subtitleInput.value.trim() || DEFAULT_SUBTITLE;
     subtitleEl.textContent = newSubtitle;
-    localStorage.setItem(LS.subtitle, newSubtitle);
-
-    // Extra line
-    const newSubtitle2 = subtitle2Input.value.trim() || DEFAULT_SUBTITLE2;
     subtitle2El.textContent = newSubtitle2;
+
+    localStorage.setItem(LS.title, newTitle);
+    localStorage.setItem(LS.subtitle, newSubtitle);
     localStorage.setItem(LS.subtitle2, newSubtitle2);
 
-    // Emojis
+    // Emojis: keep your original behavior (if empty -> default)
     const emojis = emojiInput.value.trim() || DEFAULT_EMOJIS;
     localStorage.setItem(LS.emojis, emojis);
     applyConfettiEmojis(emojis);
@@ -259,20 +230,22 @@ saveText.addEventListener("click", () => {
 // Reset settings back to defaults (does NOT reset date/background)
 resetText.addEventListener("click", () => {
     titleEl.textContent = DEFAULT_TITLE;
-    titleInput.value = DEFAULT_TITLE;
     localStorage.removeItem(LS.title);
 
     subtitleEl.textContent = DEFAULT_SUBTITLE;
-    subtitleInput.value = DEFAULT_SUBTITLE;
     localStorage.removeItem(LS.subtitle);
 
     subtitle2El.textContent = DEFAULT_SUBTITLE2;
-    subtitle2Input.value = DEFAULT_SUBTITLE2;
     localStorage.removeItem(LS.subtitle2);
 
     emojiInput.value = DEFAULT_EMOJIS;
     localStorage.removeItem(LS.emojis);
     applyConfettiEmojis(DEFAULT_EMOJIS);
+
+    // Keep inputs aligned if drawer is open
+    titleInput.value = titleEl.textContent;
+    subtitleInput.value = subtitleEl.textContent;
+    subtitle2Input.value = subtitle2El.textContent;
 });
 
 /* =========================================================
@@ -335,11 +308,7 @@ function resizeImageToDataUrl(img, maxWidth, jpegQuality) {
 /* =========================================================
    6) CHANGE DATE LOGIC (input hidden until button click)
 ========================================================= */
-/**
- * Behavior:
- * - Clicking "Change date" toggles the date input line (show/hide).
- * - The date picker popup should open only when user taps the calendar icon on the input.
- */
+
 dateBtn.addEventListener("click", () => {
     const isHidden = dateInput.classList.contains("date-hidden");
 
@@ -358,14 +327,12 @@ dateBtn.addEventListener("click", () => {
 dateInput.addEventListener("change", () => {
     if (!dateInput.value) return;
 
-    // datetime-local returns a local time string (no timezone)
-    // new Date("YYYY-MM-DDTHH:mm") is treated as LOCAL time by browsers.
     const next = new Date(dateInput.value);
     if (Number.isNaN(next.getTime())) return;
 
     DEFAULT_TARGET_DATE = next;
 
-    // ✅ FIX: store milliseconds (not ISO UTC)
+    // Store milliseconds (not ISO UTC)
     localStorage.setItem(LS.dateMs, String(DEFAULT_TARGET_DATE.getTime()));
 
     renderCountdown();
@@ -385,12 +352,10 @@ function toDatetimeLocalValue(date) {
    7) COUNTDOWN LOGIC
 ========================================================= */
 
-// Always show 2 digits for hours/minutes/seconds
 function pad2(n) {
     return String(n).padStart(2, "0");
 }
 
-// Update UI once per second
 function renderCountdown() {
     const now = new Date();
     const diffMs = DEFAULT_TARGET_DATE - now;
@@ -398,7 +363,6 @@ function renderCountdown() {
     // Show target line (user-friendly string)
     el.targetLine.textContent = "Target: " + DEFAULT_TARGET_DATE.toLocaleString();
 
-    // If countdown finished
     if (diffMs <= 0) {
         el.days.textContent = "0";
         el.hours.textContent = "00";
@@ -407,16 +371,13 @@ function renderCountdown() {
         return;
     }
 
-    // Convert ms -> seconds
     const totalSeconds = Math.floor(diffMs / 1000);
 
-    // Split into days/hours/minutes/seconds
     const days = Math.floor(totalSeconds / (3600 * 24));
     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    // Render
     el.days.textContent = String(days);
     el.hours.textContent = pad2(hours);
     el.minutes.textContent = pad2(minutes);
@@ -424,24 +385,16 @@ function renderCountdown() {
 }
 
 /* =========================================================
-   8) EMOJI CONFETTI (rebuild the floating emoji grid)
+   8) EMOJI CONFETTI
 ========================================================= */
 
-/**
- * Takes a space-separated emoji string and rebuilds the confetti.
- * Example: "💗 🧗‍♀️ 🥾❄️ 🏕️ 💘"
- */
 function applyConfettiEmojis(emojiString) {
     const container = document.querySelector(".hearts");
     if (!container) return;
 
-    // Split by whitespace: "💗 🧗‍♀️" -> ["💗","🧗‍♀️"]
     const list = emojiString.split(/\s+/).filter(Boolean);
-
-    // Fallback if user clears input
     const emojis = list.length ? list : ["💗"];
 
-    // Rebuild confetti spans
     container.innerHTML = "";
     for (let i = 0; i < MAX_CONFETTI_COUNT; i++) {
         const span = document.createElement("span");
@@ -451,7 +404,45 @@ function applyConfettiEmojis(emojiString) {
 }
 
 /* =========================================================
-   9) START (initial render + tick every second)
+   9) "SINCE LAST OPENED" UI (uses #sinceLine only)
+========================================================= */
+
+function formatTimeAway(ms) {
+    const seconds = Math.floor(ms / 1000);
+
+    if (seconds < 60) return `${seconds} seconds`;
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"}`;
+
+    const days = Math.floor(hours / 24);
+    return `${days} day${days === 1 ? "" : "s"}`;
+}
+
+function showSinceLastOpened() {
+    // Always start clean
+    sinceLineEl.textContent = "";
+    sinceLineEl.style.opacity = "1";
+
+    if (timeAwayMs <= 0) return;
+    if (timeAwayMs < 5000) return; // ignore tiny refreshes
+
+    const pretty = formatTimeAway(timeAwayMs);
+    sinceLineEl.textContent = `While you were away, ${pretty} passed 💗`;
+
+    // Fade out after 5s (CSS transition handles the smoothness)
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            sinceLineEl.style.opacity = "0";
+        }, 5000);
+    });
+}
+
+/* =========================================================
+   10) START
 ========================================================= */
 
 renderCountdown();

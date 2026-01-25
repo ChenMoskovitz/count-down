@@ -355,3 +355,11 @@ body {
     opacity: 1;
     transition: opacity 4s ease; /* try 4s first */
 }
+
+/* "Since last opened" line */
+.since-line {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 1;
+    transition: opacity 2.5s ease; /* change speed here */
+}
