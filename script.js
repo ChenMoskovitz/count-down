@@ -45,6 +45,62 @@ const LS = {
     // ✅ NEW: save target as milliseconds (not ISO string)
     dateMs: "customDateMs",
 };
+// --- "Since last opened" (Step 1): read previous open time ---
+const lastOpenedMs = Number(localStorage.getItem("lastOpenedMs") || "0");
+
+// --- (Step 1): store current open time for next visit ---
+localStorage.setItem("lastOpenedMs", String(Date.now()));
+
+// --- "Since last opened" (Step 2): calculate time away ---
+let timeAwayMs = 0;
+
+if (lastOpenedMs > 0) {
+    timeAwayMs = Date.now() - lastOpenedMs;
+}
+
+// --- "Since last opened" (Step 3): format time nicely ---
+function formatTimeAway(ms) {
+    const seconds = Math.floor(ms / 1000);
+
+    if (seconds < 60) {
+        return `${seconds} seconds`;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return `${hours} hour${hours === 1 ? "" : "s"}`;
+    }
+
+    const days = Math.floor(hours / 24);
+    return `${days} day${days === 1 ? "" : "s"}`;
+}
+if (timeAwayMs > 0) {
+    console.log("Formatted:", formatTimeAway(timeAwayMs));
+}
+function showSinceLastOpened() {
+    if (timeAwayMs <= 0) return;
+    if (timeAwayMs < 5000) return;
+
+    const pretty = formatTimeAway(timeAwayMs);
+
+    // Force visible first
+    subtitle2El.style.opacity = "1";
+    subtitle2El.textContent = `While you were away, ${pretty} passed 💗`;
+
+    // Force browser to register the visible state
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            subtitle2El.style.opacity = "0";
+        }, 5000);
+    });
+}
+
+
 
 /* =========================================================
    2) DOM ELEMENTS (get references once)
@@ -399,4 +455,5 @@ function applyConfettiEmojis(emojiString) {
 ========================================================= */
 
 renderCountdown();
+showSinceLastOpened();
 setInterval(renderCountdown, 1000);
