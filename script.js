@@ -567,9 +567,30 @@ function showSinceLastOpened() {
         }, 5000);
     });
 }
-
 /* =========================================================
-   10) START
+   10) CLEAR BUTTON LOGIC
+========================================================= */
+
+// Select all clear buttons
+const clearButtons = document.querySelectorAll('.clear-btn');
+
+clearButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // 1. Get the ID of the input this button controls
+        const inputId = btn.getAttribute('data-for');
+        const input = document.getElementById(inputId);
+
+        if (input) {
+            // 2. Clear the value
+            input.value = "";
+
+            // 3. Keep focus on the input so user can type immediately
+            input.focus();
+        }
+    });
+});
+/* =========================================================
+   11) START
 ========================================================= */
 
 renderCountdown();

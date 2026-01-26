@@ -111,31 +111,42 @@
         </button>
     </div>
 
-    <!-- Text & confetti -->
     <h3 class="settings-section">Text & Confetti</h3>
 
     <label class="field">
         <span>Title</span>
-        <input id="titleInput" type="text" dir="auto" placeholder="💗 Counting down to the moment 💗" />
+        <div class="input-wrapper">
+            <input id="titleInput" type="text" dir="auto" placeholder="💗 Counting down to the moment 💗" />
+            <button type="button" class="clear-btn" data-for="titleInput">✕</button>
+        </div>
     </label>
 
     <label class="field">
         <span>Subtitle</span>
-        <input id="subtitleInput" type="text" dir="auto" placeholder="Every second closer… 🥰" />
+        <div class="input-wrapper">
+            <input id="subtitleInput" type="text" dir="auto" placeholder="Every second closer… 🥰" />
+            <button type="button" class="clear-btn" data-for="subtitleInput">✕</button>
+        </div>
     </label>
 
     <label class="field">
         <span>Extra line (below the timer)</span>
-        <input id="subtitle2Input" type="text" dir="auto" placeholder="yaaa" />
+        <div class="input-wrapper">
+            <input id="subtitle2Input" type="text" dir="auto" placeholder="yaaa" />
+            <button type="button" class="clear-btn" data-for="subtitle2Input">✕</button>
+        </div>
     </label>
 
     <label class="field">
         <span>Confetti emojis (separate by spaces)</span>
-        <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
+        <div class="input-wrapper">
+            <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
+            <button type="button" class="clear-btn" data-for="emojiInput">✕</button>
+        </div>
     </label>
 
     <hr class="divider" />
-    <!-- ✅ Milestone settings (DRAWER only) -->
+
     <h3 class="settings-section">Milestone</h3>
 
     <label class="field checkbox-row">
@@ -143,16 +154,19 @@
         <span>Enable milestone</span>
     </label>
 
-
     <label class="field">
         <span>Milestone date & time</span>
-        <input id="milestoneDate" type="datetime-local"  />
+        <input id="milestoneDate" type="datetime-local" />
     </label>
 
     <label class="field">
         <span>Milestone message</span>
-        <input id="milestoneMsg" type="text" dir="auto" placeholder="Almost there… 💗" />
+        <div class="input-wrapper">
+            <input id="milestoneMsg" type="text" dir="auto" placeholder="Almost there… 💗" />
+            <button type="button" class="clear-btn" data-for="milestoneMsg">✕</button>
+        </div>
     </label>
+
     <hr class="divider" />
 
     <div class="drawer-actions">
@@ -162,22 +176,17 @@
 
     <hr class="divider" />
 
-    <!-- Background & Date -->
     <h3 class="settings-section">Background & Date</h3>
 
     <div class="controls">
-        <!-- Date toggle + date input -->
         <button id="dateBtn" type="button">Change date ⏰</button>
         <input id="dateInput" type="datetime-local" class="date-hidden" />
 
-        <!-- Background picker -->
         <button id="bgBtn" type="button">Change background 📸</button>
         <input id="bgInput" type="file" accept="image/*" class="visually-hidden" />
     </div>
 
     <hr class="divider" />
-
-
 </aside>
 
 <!-- Scripts -->

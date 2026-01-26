@@ -397,3 +397,42 @@ body {
     accent-color: #2d4719; /* matches your orange highlight */
     cursor: pointer;
 }
+
+/* =========================
+   Input Wrappers (for X button)
+========================= */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Add padding to the right of the input so text doesn't hit the button */
+.input-wrapper input {
+    padding-right: 40px;
+}
+
+/* The X button styling */
+.clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+
+    /* Ensure it sits on top of the input */
+    z-index: 2;
+}
+
+.clear-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
