@@ -16,7 +16,15 @@ html {
 * { box-sizing: border-box; }
 
 body {
-    overscroll-behavior: none; /* Add this line */
+    /* --- 1. NEW: Disables "pull-to-refresh" bounce --- */
+    overscroll-behavior: none;
+
+    /* --- 2. NEW: Disables blue text highlighting on touch --- */
+    -webkit-user-select: none; /* Safari */
+    user-select: none;         /* Standard */
+    -webkit-tap-highlight-color: transparent; /* Removes grey box on tap */
+
+    /* --- 3. Your ORIGINAL styles (Keep these!) --- */
     margin: 0;
     min-height: 100vh;
     display: grid;
@@ -32,7 +40,6 @@ body {
     background-position: center;
     background-repeat: no-repeat;
 
-    /* keep your existing padding/env safe-area code here */
     padding:
             calc(16px + env(safe-area-inset-top))
             calc(16px + env(safe-area-inset-right))
