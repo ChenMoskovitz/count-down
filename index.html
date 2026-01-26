@@ -105,7 +105,7 @@
 <!-- Settings drawer -->
 <aside id="settingsDrawer" class="drawer hidden" aria-hidden="true">
     <div class="drawer-header">
-        <h2>Settings 💗</h2>
+        <h1>Settings:</h1>
         <button id="closeSettings" type="button" class="drawer-close" aria-label="Close settings">
             ✕
         </button>
@@ -135,6 +135,25 @@
     </label>
 
     <hr class="divider" />
+    <!-- ✅ Milestone settings (DRAWER only) -->
+    <h3 class="settings-section">Milestone</h3>
+
+    <label class="field checkbox-row">
+        <input id="milestoneEnabled" type="checkbox" />
+        <span>Enable milestone</span>
+    </label>
+
+
+    <label class="field">
+        <span>Milestone date & time</span>
+        <input id="milestoneDate" type="datetime-local" />
+    </label>
+
+    <label class="field">
+        <span>Milestone message</span>
+        <input id="milestoneMsg" type="text" placeholder="Almost there… 💗" />
+    </label>
+    <hr class="divider" />
 
     <div class="drawer-actions">
         <button id="saveText" type="button">Save</button>
@@ -158,24 +177,7 @@
 
     <hr class="divider" />
 
-    <!-- ✅ Milestone settings (DRAWER only) -->
-    <h3 class="settings-section">Milestone</h3>
 
-    <label class="field checkbox-row">
-        <input id="milestoneEnabled" type="checkbox" />
-        <span>Enable milestone</span>
-    </label>
-
-
-    <label class="field">
-        <span>Milestone date & time</span>
-        <input id="milestoneDate" type="datetime-local" />
-    </label>
-
-    <label class="field">
-        <span>Milestone message</span>
-        <input id="milestoneMsg" type="text" placeholder="Almost there… 💗" />
-    </label>
 </aside>
 
 <!-- Scripts -->
