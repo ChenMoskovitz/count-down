@@ -47,6 +47,11 @@ const LS = {
     lastOpenedMs: "lastOpenedMs",
 };
 
+LS.mEnabled = "milestoneEnabled";
+LS.mDateMs = "milestoneDateMs";
+LS.mMsg = "milestoneMsg";
+
+
 /* =========================================================
    1.5) "SINCE LAST OPENED" DATA (read previous -> store now)
 ========================================================= */
@@ -89,6 +94,14 @@ const el = {
     targetLine: document.getElementById("targetLine"),
 };
 
+// Milestone UI (HOME screen)
+const milestoneCard = document.getElementById("milestoneCard");
+const milestoneText = document.getElementById("milestoneText");
+const mDays = document.getElementById("mDays");
+const mHours = document.getElementById("mHours");
+const mMinutes = document.getElementById("mMinutes");
+const mSeconds = document.getElementById("mSeconds");
+
 // Date controls
 const dateBtn = document.getElementById("dateBtn");
 const dateInput = document.getElementById("dateInput");
@@ -108,31 +121,56 @@ const emojiInput = document.getElementById("emojiInput");
 const saveText = document.getElementById("saveText");
 const resetText = document.getElementById("resetText");
 
+// Milestone settings inputs (DRAWER)
+const milestoneEnabled = document.getElementById("milestoneEnabled");
+const milestoneDate = document.getElementById("milestoneDate");
+const milestoneMsg = document.getElementById("milestoneMsg");
+
 // Guard: log missing elements so you can quickly fix HTML ids
 const required = {
+    // Main text
     titleEl,
     subtitleEl,
     subtitle2El,
     sinceLineEl,
 
+    // Countdown
     ...el,
 
+    // Milestone display
+    milestoneCard,
+    milestoneText,
+    mDays,
+    mHours,
+    mMinutes,
+    mSeconds,
+
+    // Date
     dateBtn,
     dateInput,
 
+    // Background
     bgBtn,
     bgInput,
 
+    // Drawer
     openSettings,
     closeSettings,
     settingsDrawer,
     settingsOverlay,
 
+    // Drawer inputs
     titleInput,
     subtitleInput,
     subtitle2Input,
     emojiInput,
 
+    // Milestone settings
+    milestoneEnabled,
+    milestoneDate,
+    milestoneMsg,
+
+    // Actions
     saveText,
     resetText,
 };
@@ -174,6 +212,19 @@ const savedBackground = localStorage.getItem(LS.bg);
 if (savedBackground) {
     setBackground(savedBackground);
 }
+
+// Milestone settings (default: off)
+milestoneEnabled.checked = localStorage.getItem(LS.mEnabled) === "true";
+
+const savedMilestoneMs = localStorage.getItem(LS.mDateMs);
+if (savedMilestoneMs) {
+    const ms = Number(savedMilestoneMs);
+    if (!Number.isNaN(ms)) {
+        milestoneDate.value = toDatetimeLocalValue(new Date(ms));
+    }
+}
+
+milestoneMsg.value = getSavedOrDefault(LS.mMsg, "Almost there… 💗");
 
 /* =========================================================
    4) SETTINGS DRAWER (open/close + save/reset)
@@ -223,6 +274,21 @@ saveText.addEventListener("click", () => {
     const emojis = emojiInput.value.trim() || DEFAULT_EMOJIS;
     localStorage.setItem(LS.emojis, emojis);
     applyConfettiEmojis(emojis);
+
+    // Save milestone settings
+    localStorage.setItem(LS.mEnabled, String(milestoneEnabled.checked));
+    localStorage.setItem(LS.mMsg, milestoneMsg.value.trim());
+
+// Save milestone date as ms (if filled)
+    if (milestoneDate.value) {
+        const dt = new Date(milestoneDate.value);
+        if (!Number.isNaN(dt.getTime())) {
+            localStorage.setItem(LS.mDateMs, String(dt.getTime()));
+        }
+    } else {
+        localStorage.removeItem(LS.mDateMs);
+    }
+
 
     closeDrawer();
 });
@@ -384,6 +450,58 @@ function renderCountdown() {
     el.seconds.textContent = pad2(seconds);
 }
 
+function renderMilestone() {
+    // 1) If disabled -> hide
+    const enabled = localStorage.getItem(LS.mEnabled) === "true";
+    if (!enabled) {
+        milestoneCard.classList.add("hidden");
+        milestoneCard.setAttribute("aria-hidden", "true");
+        return;
+    }
+
+    // 2) Need a saved date
+    const msStr = localStorage.getItem(LS.mDateMs);
+    if (!msStr) {
+        milestoneCard.classList.add("hidden");
+        milestoneCard.setAttribute("aria-hidden", "true");
+        return;
+    }
+
+    const targetMs = Number(msStr);
+    if (Number.isNaN(targetMs)) return;
+
+    const nowMs = Date.now();
+    const diffMs = targetMs - nowMs;
+
+    // 3) If in the past -> hide automatically
+    if (diffMs <= 0) {
+        milestoneCard.classList.add("hidden");
+        milestoneCard.setAttribute("aria-hidden", "true");
+        return;
+    }
+
+    // 4) Show + message
+    milestoneCard.classList.remove("hidden");
+    milestoneCard.setAttribute("aria-hidden", "false");
+
+    const msg = localStorage.getItem(LS.mMsg);
+    milestoneText.textContent = msg ? msg : "";
+
+    // 5) Compute dd:hh:mm:ss
+    const totalSeconds = Math.floor(diffMs / 1000);
+
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    mDays.textContent = String(days);
+    mHours.textContent = pad2(hours);
+    mMinutes.textContent = pad2(minutes);
+    mSeconds.textContent = pad2(seconds);
+}
+
+
 /* =========================================================
    8) EMOJI CONFETTI
 ========================================================= */
@@ -396,12 +514,21 @@ function applyConfettiEmojis(emojiString) {
     const emojis = list.length ? list : ["💗"];
 
     container.innerHTML = "";
+
     for (let i = 0; i < MAX_CONFETTI_COUNT; i++) {
         const span = document.createElement("span");
         span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+        // Randomize layout + animation so we don't rely on nth-child CSS
+        span.style.left = `${Math.random() * 100}%`;
+        span.style.animationDuration = `${14 + Math.random() * 10}s`; // 14–24s
+        span.style.animationDelay = `${Math.random() * 6}s`;         // 0–6s
+        span.style.transform = `translateY(0) scale(${0.8 + Math.random() * 0.5})`;
+
         container.appendChild(span);
     }
 }
+
 
 /* =========================================================
    9) "SINCE LAST OPENED" UI (uses #sinceLine only)
@@ -446,5 +573,11 @@ function showSinceLastOpened() {
 ========================================================= */
 
 renderCountdown();
+renderMilestone();
 showSinceLastOpened();
-setInterval(renderCountdown, 1000);
+
+setInterval(() => {
+    renderCountdown();
+    renderMilestone();
+}, 1000);
+

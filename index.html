@@ -20,8 +20,7 @@
 </head>
 
 <body>
-<!-- Emoji “confetti” container.
-     JS will fill this with spans based on saved emoji settings. -->
+<!-- Emoji “confetti” container. JS fills this with spans. -->
 <div class="hearts" aria-hidden="true"></div>
 
 <!-- Main app card -->
@@ -59,16 +58,45 @@
             </div>
         </div>
 
-        <!-- Extra text -->
+        <!-- Your extra editable line -->
         <p id="subtitle2">yaaa</p>
 
-        <!-- Time since text -->
-        <p id="sinceLine" class="since-line"></p>
+        <!-- ✅ Milestone mini-countdown (HOME screen, hidden unless enabled) -->
+        <section id="milestoneCard" class="milestone hidden" aria-hidden="true">
+            <p id="milestoneText" class="milestone-text"></p>
+
+            <div class="milestone-row" aria-label="Milestone countdown">
+                <div class="m-unit">
+                    <span class="m-num" id="mDays">--</span>
+                    <small class="m-label">days</small>
+                </div>
+                <div class="m-sep">:</div>
+
+                <div class="m-unit">
+                    <span class="m-num" id="mHours">--</span>
+                    <small class="m-label">hours</small>
+                </div>
+                <div class="m-sep">:</div>
+
+                <div class="m-unit">
+                    <span class="m-num" id="mMinutes">--</span>
+                    <small class="m-label">min</small>
+                </div>
+                <div class="m-sep">:</div>
+
+                <div class="m-unit">
+                    <span class="m-num" id="mSeconds">--</span>
+                    <small class="m-label">sec</small>
+                </div>
+            </div>
+        </section>
 
         <!-- Target date line -->
         <p class="target" id="targetLine"></p>
-    </div>
 
+        <!-- Since-last-opened line -->
+        <p id="sinceLine" class="since-line"></p>
+    </div>
 </main>
 
 <!-- Settings overlay (click outside drawer to close) -->
@@ -83,7 +111,7 @@
         </button>
     </div>
 
-    <!-- Title -->
+    <!-- Text & confetti -->
     <h3 class="settings-section">Text & Confetti</h3>
 
     <label class="field">
@@ -91,18 +119,16 @@
         <input id="titleInput" type="text" placeholder="💗 Counting down to the moment 💗" />
     </label>
 
-    <!-- Subtitle -->
     <label class="field">
         <span>Subtitle</span>
         <input id="subtitleInput" type="text" placeholder="Every second closer… 🥰" />
     </label>
-    <!-- subtitle2 -->
+
     <label class="field">
         <span>Extra line (below the timer)</span>
         <input id="subtitle2Input" type="text" placeholder="yaaa" />
     </label>
 
-    <!-- Confetti emoji list -->
     <label class="field">
         <span>Confetti emojis (separate by spaces)</span>
         <input id="emojiInput" type="text" placeholder="💗 🧗‍♀️ 🥾❄️ 🏕️ 💘" />
@@ -110,7 +136,6 @@
 
     <hr class="divider" />
 
-    <!-- Save / Reset -->
     <div class="drawer-actions">
         <button id="saveText" type="button">Save</button>
         <button id="resetText" type="button" class="secondary">Reset</button>
@@ -118,22 +143,39 @@
 
     <hr class="divider" />
 
+    <!-- Background & Date -->
     <h3 class="settings-section">Background & Date</h3>
 
-    <!-- Controls -->
     <div class="controls">
         <!-- Date toggle + date input -->
         <button id="dateBtn" type="button">Change date ⏰</button>
-        <!-- Starts hidden; JS toggles .date-hidden -->
         <input id="dateInput" type="datetime-local" class="date-hidden" />
 
         <!-- Background picker -->
         <button id="bgBtn" type="button">Change background 📸</button>
-        <!-- Hidden file input; button triggers it -->
         <input id="bgInput" type="file" accept="image/*" class="visually-hidden" />
     </div>
 
+    <hr class="divider" />
 
+    <!-- ✅ Milestone settings (DRAWER only) -->
+    <h3 class="settings-section">Milestone</h3>
+
+    <label class="field checkbox-row">
+        <input id="milestoneEnabled" type="checkbox" />
+        <span>Enable milestone</span>
+    </label>
+
+
+    <label class="field">
+        <span>Milestone date & time</span>
+        <input id="milestoneDate" type="datetime-local" />
+    </label>
+
+    <label class="field">
+        <span>Milestone message</span>
+        <input id="milestoneMsg" type="text" placeholder="Almost there… 💗" />
+    </label>
 </aside>
 
 <!-- Scripts -->
