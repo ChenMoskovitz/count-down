@@ -451,3 +451,28 @@ body {
     color: white;
     background: rgba(255, 255, 255, 0.1);
 }
+
+/* =========================
+   Interactive "Grow" Emoji
+========================= */
+.touch-emoji {
+    position: fixed;
+    z-index: 100;       /* Above everything */
+    pointer-events: none; /* Let clicks pass through */
+    font-size: 40px;    /* Base size */
+
+    /* Center the emoji on the finger */
+    transform-origin: center center;
+    transform: translate(-50%, -50%) scale(0);
+
+    /* Smooth growth */
+    transition: transform 0.1s linear;
+    will-change: transform, top, opacity;
+}
+
+/* Animation for when you let go */
+.fly-away {
+    /* We animate 'top' instead of transform so we don't reset the scale */
+    transition: top 1s ease-in, opacity 1s ease-out !important;
+    opacity: 0;
+}

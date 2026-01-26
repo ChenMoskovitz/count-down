@@ -602,3 +602,102 @@ setInterval(() => {
     renderMilestone();
 }, 1000);
 
+/* =========================================================
+   12) INTERACTIVE: GROWING EMOJI (Touch & Hold)
+========================================================= */
+
+let activeEmoji = null;
+let growTimer = null;
+let currentScale = 0;
+
+// Helper to pick a random emoji
+function getRandomEmoji() {
+    const savedEmojis = localStorage.getItem("customEmojis") || "💗";
+    const emojiList = savedEmojis.split(/\s+/).filter(Boolean);
+    return emojiList[Math.floor(Math.random() * emojiList.length)];
+}
+
+// 1. START (Touch or Mouse Down)
+function startGrow(e) {
+    // Ignore clicks on buttons/inputs
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('.drawer')) {
+        return;
+    }
+
+    // Get position (touch or mouse)
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Create the element
+    activeEmoji = document.createElement('div');
+    activeEmoji.classList.add('touch-emoji');
+    activeEmoji.textContent = getRandomEmoji();
+
+    // Set initial position
+    activeEmoji.style.left = x + 'px';
+    activeEmoji.style.top = y + 'px';
+
+    document.body.appendChild(activeEmoji);
+
+    // Start growing loop
+    currentScale = 0;
+    growTimer = setInterval(() => {
+        if (!activeEmoji) return;
+
+        // Grow by 0.1 every 30ms
+        currentScale += 0.05;
+
+        // Cap the max size (e.g., 5x normal size)
+        if (currentScale > 6) currentScale = 6;
+
+        // Apply scale
+        activeEmoji.style.transform = `translate(-50%, -50%) scale(${currentScale})`;
+    }, 20);
+}
+
+// 2. MOVE (Drag the growing emoji around)
+function moveGrow(e) {
+    if (!activeEmoji) return;
+
+    // Prevent scrolling while dragging the emoji
+    e.preventDefault();
+
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+    activeEmoji.style.left = x + 'px';
+    activeEmoji.style.top = y + 'px';
+}
+
+// 3. END (Release)
+function endGrow() {
+    if (!activeEmoji) return;
+
+    // Stop growing
+    clearInterval(growTimer);
+    growTimer = null;
+
+    // Trigger "Fly Away"
+    // We move it 200px up from wherever it is currently
+    const currentTop = parseFloat(activeEmoji.style.top);
+    activeEmoji.classList.add('fly-away');
+    activeEmoji.style.top = (currentTop - 300) + 'px'; // Float up 300px
+
+    // Clean up DOM after animation finishes
+    const elementToRemove = activeEmoji;
+    activeEmoji = null; // Clear reference immediately so next tap starts fresh
+
+    setTimeout(() => {
+        elementToRemove.remove();
+    }, 1000); // Matches CSS transition time
+}
+
+// Add Listeners (Support both Touch and Mouse)
+document.addEventListener('mousedown', startGrow);
+document.addEventListener('touchstart', startGrow, { passive: false });
+
+document.addEventListener('mousemove', moveGrow);
+document.addEventListener('touchmove', moveGrow, { passive: false });
+
+document.addEventListener('mouseup', endGrow);
+document.addEventListener('touchend', endGrow);
