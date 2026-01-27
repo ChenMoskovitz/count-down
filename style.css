@@ -483,3 +483,30 @@ body {
     transition: top 1s ease-in, opacity 1s ease-out !important;
     opacity: 0;
 }
+
+/* =========================
+   Magic Dust (Sparkle Trail)
+========================= */
+.magic-dust {
+    position: fixed;
+    pointer-events: none; /* Clicks pass through */
+    z-index: 99;          /* Behind the big "Grow" emoji (z-index 100) */
+    font-size: 20px;
+
+    /* Center on finger */
+    transform: translate(-50%, -50%);
+
+    /* Animation: Shrink and fade out */
+    animation: dustAnim 0.8s ease-out forwards;
+}
+
+@keyframes dustAnim {
+    0% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0) rotate(180deg); /* Spin and shrink */
+        opacity: 0;
+    }
+}

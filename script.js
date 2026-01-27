@@ -701,3 +701,48 @@ document.addEventListener('touchmove', moveGrow, { passive: false });
 
 document.addEventListener('mouseup', endGrow);
 document.addEventListener('touchend', endGrow);
+
+/* =========================================================
+   13) MAGIC DUST TRAIL (Sparkles on Move)
+========================================================= */
+
+let lastDustTime = 0;
+
+function createDust(e) {
+    // 1. Limit the dust creation (Performance protection)
+    // Only allow 1 particle every 40ms
+    const now = Date.now();
+    if (now - lastDustTime < 40) return;
+    lastDustTime = now;
+
+    // 2. Get coordinates (Touch or Mouse)
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // 3. Create the sparkle element
+    const dust = document.createElement('span');
+    dust.classList.add('magic-dust');
+
+    // You can use "✨" or mix it up with "💖", "⭐", "🌸"
+    const sparkles = ["✨", "⭐", "💫"];
+    dust.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+
+    dust.style.left = x + 'px';
+    dust.style.top = y + 'px';
+
+    // Randomize slightly so it looks organic
+    const randomOffset = (Math.random() - 0.5) * 20; // -10px to +10px
+    dust.style.marginLeft = randomOffset + 'px';
+    dust.style.marginTop = randomOffset + 'px';
+
+    document.body.appendChild(dust);
+
+    // 4. Cleanup
+    setTimeout(() => {
+        dust.remove();
+    }, 800);
+}
+
+// Attach to movement events (Global)
+document.addEventListener('mousemove', createDust);
+document.addEventListener('touchmove', createDust, { passive: true });
