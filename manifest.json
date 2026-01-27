@@ -1,5 +1,5 @@
 {
-  "name": "Love Countdown",
+  "name": "Countdown",
   "short_name": "Countdown",
   "start_url": "./index.html",
   "display": "standalone",
