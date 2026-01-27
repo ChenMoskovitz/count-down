@@ -22,7 +22,7 @@ body {
     /* Background Image with Overlay */
     background-image:
             linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)),
-            url("assets/img.png");
+            url("assets/icon.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
