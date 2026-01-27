@@ -1,89 +1,69 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Basic metadata -->
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <!-- PWA-ish / Add-to-Home-Screen support -->
-    <!-- iOS (still useful) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <!-- Non-iOS (Chrome etc.) -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#111827" />
 
     <title>💗 Countdown</title>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-<!-- Emoji “confetti” container. JS fills this with spans. -->
 <div class="hearts" aria-hidden="true"></div>
 
-<!-- Main app card -->
 <main class="app">
-    <!-- Settings drawer button -->
     <button id="openSettings" class="settings-btn" type="button" aria-label="Open settings">
         ⚙️
     </button>
 
     <div class="app-content">
-        <!-- Titles (editable via settings) -->
         <h1 id="title" dir="auto">💗💗💗</h1>
         <p id="subtitle" dir="auto">Only</p>
 
-        <!-- Countdown blocks -->
         <div class="timer">
             <div class="unit">
                 <span class="num" id="days">--</span>
                 <small class="label">Days</small>
             </div>
-
             <div class="unit">
                 <span class="num" id="hours">--</span>
                 <small class="label">Hours</small>
             </div>
-
             <div class="unit">
                 <span class="num" id="minutes">--</span>
                 <small class="label">Minutes</small>
             </div>
-
             <div class="unit">
                 <span class="num" id="seconds">--</span>
                 <small class="label">Seconds</small>
             </div>
         </div>
 
-        <!-- Your extra editable line -->
         <p id="subtitle2" dir="auto">yaaa</p>
 
-        <!-- ✅ Milestone mini-countdown (HOME screen, hidden unless enabled) -->
         <section id="milestoneCard" class="milestone hidden" aria-hidden="true">
             <p id="milestoneText" class="milestone-text" dir="auto"></p>
-
             <div class="milestone-row" aria-label="Milestone countdown">
                 <div class="m-unit">
                     <span class="m-num" id="mDays">--</span>
                     <small class="m-label">days</small>
                 </div>
                 <div class="m-sep">:</div>
-
                 <div class="m-unit">
                     <span class="m-num" id="mHours">--</span>
                     <small class="m-label">hours</small>
                 </div>
                 <div class="m-sep">:</div>
-
                 <div class="m-unit">
                     <span class="m-num" id="mMinutes">--</span>
                     <small class="m-label">min</small>
                 </div>
                 <div class="m-sep">:</div>
-
                 <div class="m-unit">
                     <span class="m-num" id="mSeconds">--</span>
                     <small class="m-label">sec</small>
@@ -91,18 +71,13 @@
             </div>
         </section>
 
-        <!-- Target date line -->
         <p class="target" id="targetLine"></p>
-
-        <!-- Since-last-opened line -->
         <p id="sinceLine" class="since-line"></p>
     </div>
 </main>
 
-<!-- Settings overlay (click outside drawer to close) -->
 <div id="settingsOverlay" class="overlay hidden"></div>
 
-<!-- Settings drawer -->
 <aside id="settingsDrawer" class="drawer hidden" aria-hidden="true">
     <div class="drawer-header">
         <h1>Settings:</h1>
@@ -189,7 +164,6 @@
     <hr class="divider" />
 </aside>
 
-<!-- Scripts -->
 <script src="script.js"></script>
 </body>
 </html>
