@@ -50,6 +50,16 @@
         </div>
 
         <p id="subtitle2" dir="auto">yaaa</p>
+        <div id="reminderCard" class="reminder-note hidden" aria-hidden="true">
+            <div class="reminder-content">
+                <span class="reminder-icon">🔔</span>
+                <div class="reminder-text-group">
+                    <strong id="reminderDisplayMsg" dir="auto"></strong>
+                    <small id="reminderDisplayDate"></small>
+                </div>
+            </div>
+            <button id="dismissReminder" class="reminder-close" aria-label="Dismiss reminder">✓</button>
+        </div>
 
         <section id="milestoneCard" class="milestone hidden" aria-hidden="true">
             <p id="milestoneText" class="milestone-text" dir="auto"></p>
@@ -153,7 +163,27 @@
         <button id="saveText" type="button">Save</button>
         <button id="resetText" type="button" class="secondary">Reset</button>
     </div>
+    <hr class="divider" />
 
+    <h3 class="settings-section">Set a Reminder</h3>
+
+    <label class="field">
+        <span>What do you want to remember?</span>
+        <div class="input-wrapper">
+            <input id="reminderInputMsg" type="text" dir="auto" placeholder="e.g. Call to schedule a meeting" />
+            <button type="button" class="clear-btn" data-for="reminderInputMsg">✕</button>
+        </div>
+    </label>
+
+    <label class="field">
+        <span>When?</span>
+        <input id="reminderInputDate" type="datetime-local" />
+    </label>
+
+    <div class="controls">
+        <button id="addToCalendarBtn" type="button">📅 Add to System Calendar</button>
+        <button id="setInAppReminderBtn" type="button">📌 Pin to Home Screen</button>
+    </div>
     <hr class="divider" />
 
     <h3 class="settings-section">Background & Date</h3>

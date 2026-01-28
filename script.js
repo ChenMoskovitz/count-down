@@ -522,6 +522,144 @@ document.addEventListener('mousemove', createDust);
 document.addEventListener('touchmove', createDust, { passive: true });
 
 /* =========================================================
+   13) REMINDER SYSTEM (Calendar + Home Screen)
+========================================================= */
+
+// DOM Elements
+const reminderInputMsg = document.getElementById("reminderInputMsg");
+const reminderInputDate = document.getElementById("reminderInputDate");
+const addToCalendarBtn = document.getElementById("addToCalendarBtn");
+const setInAppReminderBtn = document.getElementById("setInAppReminderBtn");
+
+// Home Screen Elements
+const reminderCard = document.getElementById("reminderCard");
+const reminderDisplayMsg = document.getElementById("reminderDisplayMsg");
+const reminderDisplayDate = document.getElementById("reminderDisplayDate");
+const dismissReminder = document.getElementById("dismissReminder");
+
+// Storage Keys
+const LS_REMINDER = {
+    msg: "reminderMsg",
+    date: "reminderDate"
+};
+
+// 1. Function to Render the Reminder on Home Screen
+function renderReminder() {
+    const msg = localStorage.getItem(LS_REMINDER.msg);
+    const dateStr = localStorage.getItem(LS_REMINDER.date);
+
+    if (!msg) {
+        reminderCard.classList.add("hidden");
+        return;
+    }
+
+    // Show it
+    reminderCard.classList.remove("hidden");
+    reminderDisplayMsg.textContent = msg;
+
+    // Format date nicely if it exists
+    if (dateStr) {
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+            reminderDisplayDate.textContent = d.toLocaleString([], {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        } else {
+            reminderDisplayDate.textContent = "";
+        }
+    } else {
+        reminderDisplayDate.textContent = "";
+    }
+}
+
+// 2. Button: Pin to Home Screen
+setInAppReminderBtn.addEventListener("click", () => {
+    const msg = reminderInputMsg.value.trim();
+    const date = reminderInputDate.value;
+
+    if (!msg) {
+        alert("Please write a message first!");
+        return;
+    }
+
+    localStorage.setItem(LS_REMINDER.msg, msg);
+    localStorage.setItem(LS_REMINDER.date, date);
+
+    renderReminder();
+    closeDrawer(); // Close settings so they see it
+});
+
+// 3. Button: Add to System Calendar (.ics file)
+addToCalendarBtn.addEventListener("click", () => {
+    const msg = reminderInputMsg.value.trim();
+    const dateVal = reminderInputDate.value;
+
+    if (!msg || !dateVal) {
+        alert("Please add both a message and a date for the calendar.");
+        return;
+    }
+
+    const startDate = new Date(dateVal);
+    // End date = Start date + 1 hour (default duration)
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+
+    // Helper to format date for ICS (YYYYMMDDTHHmmSSZ)
+    // We use UTC to ensure it works across timezones correctly
+    const formatDate = (date) => {
+        return date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    };
+
+    // Create the .ics file content
+    const icsContent = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `DTSTART:${formatDate(startDate)}`,
+        `DTEND:${formatDate(endDate)}`,
+        `SUMMARY:${msg}`,
+        `DESCRIPTION:Reminder from your Countdown App 💗`,
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ].join("\n");
+
+    // Create a download link
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "reminder.ics";
+
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+// 4. Button: Dismiss (Delete) Reminder
+dismissReminder.addEventListener("click", () => {
+    // Animate out
+    reminderCard.style.transform = "scale(0.8)";
+    reminderCard.style.opacity = "0";
+
+    setTimeout(() => {
+        // Actually remove data
+        localStorage.removeItem(LS_REMINDER.msg);
+        localStorage.removeItem(LS_REMINDER.date);
+
+        // Reset styles for next time
+        reminderCard.classList.add("hidden");
+        reminderCard.style.transform = "";
+        reminderCard.style.opacity = "";
+
+        // Clear inputs in settings too
+        reminderInputMsg.value = "";
+        reminderInputDate.value = "";
+    }, 200);
+});
+
+// Initial Check
+renderReminder();
+
+/* =========================================================
    12) INITIALIZE
 ========================================================= */
 renderCountdown();
