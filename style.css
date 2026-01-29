@@ -240,6 +240,9 @@ body {
 /* =========================
    6. Inputs & Forms
 ========================= */
+/* =========================
+   6. Inputs & Forms
+========================= */
 /* Re-enable text selection for inputs */
 input, textarea {
     -webkit-user-select: text;
@@ -258,20 +261,24 @@ input, textarea {
     margin-bottom: 6px;
 }
 
-/* ✅ UNIFIED INPUT STYLE: Applies to Text, Date, and the hidden Date input */
+/* ✅ UNIFIED INPUT STYLE */
 .field input,
 #dateInput {
+    /* iOS RESET: This stops the iPhone from making inputs look like bubbles */
+    -webkit-appearance: none;
+    appearance: none;
+
     width: 100%;
-    height: 44px; /* Force exact same height for everything */
-    padding: 0 12px; /* Uniform padding */
+    height: 44px;
+    padding: 0 12px;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.18);
     background: rgba(255,255,255,0.10);
     color: white;
-    font-size: 16px; /* Prevents iOS Zoom */
-    box-sizing: border-box; /* Ensures padding doesn't add to width */
+    font-size: 16px;
+    box-sizing: border-box;
     font-family: inherit;
-    display: block; /* Fixes alignment issues */
+    display: block;
 }
 
 /* Specific fix for the "Change Date" input to remove its extra margin */
@@ -286,7 +293,6 @@ input, textarea {
     align-items: center;
 }
 
-/* Text inputs need room for the 'X' button, Date inputs do not */
 .input-wrapper input {
     padding-right: 40px;
 }
@@ -324,7 +330,7 @@ input, textarea {
     cursor: pointer;
 }
 
-/* Date & File Inputs (Helpers) */
+/* Helpers */
 .visually-hidden {
     position: absolute;
     left: -9999px;
@@ -336,43 +342,6 @@ input, textarea {
 .date-hidden {
     display: none !important;
 }
-
-/* Save/Reset Buttons */
-.drawer-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-.drawer-actions button {
-    flex: 1;
-    border: 0;
-    padding: 10px 12px;
-    border-radius: 14px;
-    font-weight: 600;
-    background: rgba(255,255,255,0.18);
-    color: white;
-    cursor: pointer;
-}
-.drawer-actions .secondary {
-    background: rgba(255,255,255,0.10);
-}
-
-.controls {
-    display: grid;
-    gap: 10px;
-    margin-top: 12px;
-}
-.controls button {
-    width: 100%;
-    border: 0;
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-weight: 600;
-    background: rgba(255,255,255,0.18);
-    color: white;
-    cursor: pointer;
-}
-
 /* =========================
    7. Animations & Effects
 ========================= */
@@ -550,9 +519,9 @@ input, textarea {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Dark background dimming */
-    backdrop-filter: blur(5px);
-    z-index: 2000; /* On top of everything */
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -562,39 +531,76 @@ input, textarea {
 
 .modal-overlay.hidden {
     opacity: 0;
-    pointer-events: none; /* Click goes through when hidden */
+    pointer-events: none;
 }
 
 .modal-card {
-    background: #1f2937; /* Dark gray card */
-    padding: 24px;
-    border-radius: 20px;
+    background: #1f2937;
+    padding: 24px 20px;
+    border-radius: 24px;
     width: 90%;
-    max-width: 350px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 340px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.12);
     transform: scale(1);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .modal-overlay.hidden .modal-card {
-    transform: scale(0.8); /* Shrink effect when closing */
+    transform: scale(0.9);
 }
 
 .modal-card h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
+    margin: 0 0 24px;
     font-size: 20px;
-    color: #fff;
+    color: white;
     text-align: center;
+    font-weight: 700;
 }
 
 .modal-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
 }
 
+/* Shared Button Style */
 .modal-actions button {
-    flex: 1; /* Make buttons equal width */
+    /* iOS RESET: Stops buttons from being generic rounded white blobs */
+    -webkit-appearance: none;
+    appearance: none;
+
+    flex: 1;
+    height: 44px;
+    border: 0;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Default to Save button style */
+    background: white;
+    color: #1f2937;
+}
+
+.modal-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.modal-actions button:active {
+    transform: translateY(0);
+}
+
+/* Cancel Button (Secondary) */
+.modal-actions button.secondary {
+    background: rgba(255, 255, 255, 0.1); /* Dark transparent */
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-actions button.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: none;
 }
