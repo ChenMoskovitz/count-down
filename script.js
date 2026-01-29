@@ -369,7 +369,7 @@ function renderMilestone() {
 ========================================================= */
 
 function applyConfettiEmojis(emojiString) {
-    const container = document.querySelector(".hearts");
+    const container = document.querySelector(".confetti");
     if (!container) return;
 
     const list = emojiString.split(/\s+/).filter(Boolean);
@@ -522,143 +522,195 @@ document.addEventListener('mousemove', createDust);
 document.addEventListener('touchmove', createDust, { passive: true });
 
 /* =========================================================
-   13) REMINDER SYSTEM (Calendar + Home Screen)
+   13) REMINDER SYSTEM
 ========================================================= */
 
-// DOM Elements
-const reminderInputMsg = document.getElementById("reminderInputMsg");
-const reminderInputDate = document.getElementById("reminderInputDate");
+// --- A. SETTINGS DRAWER (Create New) ---
+const reminderList = document.getElementById("reminderList");
+const reminderInputMsg = document.getElementById("reminderInputMsg");   // The "Create" Input
+const reminderInputDate = document.getElementById("reminderInputDate"); // The "Create" Date
+const saveReminderBtn = document.getElementById("saveReminderBtn");
 const addToCalendarBtn = document.getElementById("addToCalendarBtn");
-const setInAppReminderBtn = document.getElementById("setInAppReminderBtn");
 
-// Home Screen Elements
-const reminderCard = document.getElementById("reminderCard");
-const reminderDisplayMsg = document.getElementById("reminderDisplayMsg");
-const reminderDisplayDate = document.getElementById("reminderDisplayDate");
-const dismissReminder = document.getElementById("dismissReminder");
+// --- B. EDIT MODAL (Edit Existing) ---
+const editModal = document.getElementById("editModal");
+const editInputMsg = document.getElementById("editInputMsg");           // The "Edit" Input
+const editInputDate = document.getElementById("editInputDate");         // The "Edit" Date
+const confirmEditBtn = document.getElementById("confirmEditBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
 
-// Storage Keys
-const LS_REMINDER = {
-    msg: "reminderMsg",
-    date: "reminderDate"
-};
+// Storage Key
+const LS_REMINDERS_KEY = "myRemindersList";
+let reminders = JSON.parse(localStorage.getItem(LS_REMINDERS_KEY)) || [];
+let overdueCheckerInterval;
+let currentEditingId = null; // Track which ID we are currently editing
 
-// 1. Function to Render the Reminder on Home Screen
-function renderReminder() {
-    const msg = localStorage.getItem(LS_REMINDER.msg);
-    const dateStr = localStorage.getItem(LS_REMINDER.date);
-
-    if (!msg) {
-        reminderCard.classList.add("hidden");
-        return;
-    }
-
-    // Show it
-    reminderCard.classList.remove("hidden");
-    reminderDisplayMsg.textContent = msg;
-
-    // Format date nicely if it exists
-    if (dateStr) {
-        const d = new Date(dateStr);
-        if (!isNaN(d.getTime())) {
-            reminderDisplayDate.textContent = d.toLocaleString([], {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-        } else {
-            reminderDisplayDate.textContent = "";
-        }
-    } else {
-        reminderDisplayDate.textContent = "";
-    }
-}
-
-// 2. Button: Pin to Home Screen
-setInAppReminderBtn.addEventListener("click", () => {
+// ========================================================
+//  PART 1: CREATE NEW REMINDER
+// ========================================================
+saveReminderBtn.addEventListener("click", () => {
     const msg = reminderInputMsg.value.trim();
     const date = reminderInputDate.value;
 
     if (!msg) {
-        alert("Please write a message first!");
+        alert("Please write a message!");
         return;
     }
 
-    localStorage.setItem(LS_REMINDER.msg, msg);
-    localStorage.setItem(LS_REMINDER.date, date);
+    // 1. Create Object
+    const newReminder = {
+        id: Date.now(),
+        msg: msg,
+        date: date
+    };
 
-    renderReminder();
-    closeDrawer(); // Close settings so they see it
+    // 2. Add to list
+    reminders.push(newReminder);
+    saveData();
+    renderReminders();
+
+    // 3. Clear "Create" inputs & Close Drawer
+    reminderInputMsg.value = "";
+    reminderInputDate.value = "";
+    closeDrawer();
 });
 
-// 3. Button: Add to System Calendar (.ics file)
+
+// ========================================================
+//  PART 2: EDIT EXISTING REMINDER (The Popup Logic)
+// ========================================================
+
+// Open the Modal
+window.editReminder = function(id) {
+    const reminder = reminders.find(r => r.id === id);
+    if (!reminder) return;
+
+    // 1. Save the ID we are working on
+    currentEditingId = id;
+
+    // 2. Fill the POPUP inputs (not the settings inputs)
+    editInputMsg.value = reminder.msg;
+    editInputDate.value = reminder.date || "";
+
+    // 3. Show the modal
+    editModal.classList.remove("hidden");
+};
+
+// Save Changes (Confirm Button)
+confirmEditBtn.addEventListener("click", () => {
+    if (!currentEditingId) return;
+
+    // 1. Find the reminder
+    const index = reminders.findIndex(r => r.id === currentEditingId);
+    if (index > -1) {
+        // 2. Update its data
+        reminders[index].msg = editInputMsg.value.trim();
+        reminders[index].date = editInputDate.value;
+
+        // 3. Save & Render
+        saveData();
+        renderReminders();
+    }
+
+    // 4. Close Modal
+    editModal.classList.add("hidden");
+    currentEditingId = null;
+});
+
+// Cancel Edit
+cancelEditBtn.addEventListener("click", () => {
+    editModal.classList.add("hidden");
+    currentEditingId = null;
+});
+
+
+// ========================================================
+//  PART 3: SHARED LOGIC (Render & Delete)
+// ========================================================
+
+function renderReminders() {
+    reminderList.innerHTML = "";
+
+    // Sort: Date set first, then others
+    reminders.sort((a, b) => {
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(a.date) - new Date(b.date);
+    });
+
+    reminders.forEach(reminder => {
+        const card = document.createElement("div");
+        card.className = "reminder-note";
+
+        // Overdue Check
+        if (reminder.date) {
+            if (new Date().getTime() > new Date(reminder.date).getTime()) {
+                card.classList.add("is-overdue");
+            }
+        }
+
+        // Display Date
+        let dateDisplay = "";
+        if (reminder.date) {
+            const d = new Date(reminder.date);
+            dateDisplay = d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        card.innerHTML = `
+            <div class="reminder-content">
+                <div class="reminder-text-group">
+                    <strong dir="auto">${reminder.msg}</strong>
+                    <small>${dateDisplay}</small>
+                </div>
+            </div>
+            <div class="reminder-actions">
+                <button class="action-btn edit-btn" onclick="editReminder(${reminder.id})">✏️</button>
+                <button class="action-btn done-btn" onclick="deleteReminder(${reminder.id})">✓</button>
+            </div>
+        `;
+        reminderList.appendChild(card);
+    });
+}
+
+window.deleteReminder = function(id) {
+    if(confirm("Delete this reminder?")) {
+        reminders = reminders.filter(r => r.id !== id);
+        saveData();
+        renderReminders();
+    }
+};
+
+function saveData() {
+    localStorage.setItem(LS_REMINDERS_KEY, JSON.stringify(reminders));
+}
+
+// Add to Calendar (Uses the Settings Input)
 addToCalendarBtn.addEventListener("click", () => {
     const msg = reminderInputMsg.value.trim();
     const dateVal = reminderInputDate.value;
-
-    if (!msg || !dateVal) {
-        alert("Please add both a message and a date for the calendar.");
-        return;
-    }
+    if (!msg || !dateVal) { alert("Please fill the message and date to add to calendar."); return; }
 
     const startDate = new Date(dateVal);
-    // End date = Start date + 1 hour (default duration)
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    const endDate = new Date(startDate.getTime() + 60*60*1000);
+    const formatDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
 
-    // Helper to format date for ICS (YYYYMMDDTHHmmSSZ)
-    // We use UTC to ensure it works across timezones correctly
-    const formatDate = (date) => {
-        return date.toISOString().replace(/-|:|\.\d\d\d/g, "");
-    };
-
-    // Create the .ics file content
-    const icsContent = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "BEGIN:VEVENT",
-        `DTSTART:${formatDate(startDate)}`,
-        `DTEND:${formatDate(endDate)}`,
-        `SUMMARY:${msg}`,
-        `DESCRIPTION:Reminder from your Countdown App 💗`,
-        "END:VEVENT",
-        "END:VCALENDAR"
+    const ics = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT",
+        `DTSTART:${formatDate(startDate)}`, `DTEND:${formatDate(endDate)}`,
+        `SUMMARY:${msg}`, "END:VEVENT", "END:VCALENDAR"
     ].join("\n");
 
-    // Create a download link
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "reminder.ics";
-
-    // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 });
 
-// 4. Button: Dismiss (Delete) Reminder
-dismissReminder.addEventListener("click", () => {
-    // Animate out
-    reminderCard.style.transform = "scale(0.8)";
-    reminderCard.style.opacity = "0";
-
-    setTimeout(() => {
-        // Actually remove data
-        localStorage.removeItem(LS_REMINDER.msg);
-        localStorage.removeItem(LS_REMINDER.date);
-
-        // Reset styles for next time
-        reminderCard.classList.add("hidden");
-        reminderCard.style.transform = "";
-        reminderCard.style.opacity = "";
-
-        // Clear inputs in settings too
-        reminderInputMsg.value = "";
-        reminderInputDate.value = "";
-    }, 200);
-});
-
-// Initial Check
-renderReminder();
-
+// Initial Load
+renderReminders();
 /* =========================================================
    12) INITIALIZE
 ========================================================= */

@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#111827" />
 
     <title>💗 Countdown</title>
-    <link rel="stylesheet" href="style.css" />
 
+    <link rel="stylesheet" href="style.css" />
     <link rel="apple-touch-icon" href="assets/icon.png" />
     <link rel="icon" type="image/png" href="assets/icon.png" />
-
     <link rel="manifest" href="manifest.json" />
 </head>
 
 <body>
-<div class="hearts" aria-hidden="true"></div>
+<div class="confetti" aria-hidden="true"></div>
 
 <main class="app">
     <button id="openSettings" class="settings-btn" type="button" aria-label="Open settings">
@@ -50,16 +48,6 @@
         </div>
 
         <p id="subtitle2" dir="auto">yaaa</p>
-        <div id="reminderCard" class="reminder-note hidden" aria-hidden="true">
-            <div class="reminder-content">
-                <span class="reminder-icon">🔔</span>
-                <div class="reminder-text-group">
-                    <strong id="reminderDisplayMsg" dir="auto"></strong>
-                    <small id="reminderDisplayDate"></small>
-                </div>
-            </div>
-            <button id="dismissReminder" class="reminder-close" aria-label="Dismiss reminder">✓</button>
-        </div>
 
         <section id="milestoneCard" class="milestone hidden" aria-hidden="true">
             <p id="milestoneText" class="milestone-text" dir="auto"></p>
@@ -85,6 +73,9 @@
                 </div>
             </div>
         </section>
+
+        <div id="reminderList" class="reminder-container">
+        </div>
 
         <p class="target" id="targetLine"></p>
         <p id="sinceLine" class="since-line"></p>
@@ -114,7 +105,7 @@
     <label class="field">
         <span>Subtitle</span>
         <div class="input-wrapper">
-            <input id="subtitleInput" type="text" dir="auto" placeholder="Every second closer… 🥰" />
+            <input id="subtitleInput" type="text" dir="auto" placeholder="Every second closer... 🥰" />
             <button type="button" class="clear-btn" data-for="subtitleInput">✕</button>
         </div>
     </label>
@@ -163,6 +154,7 @@
         <button id="saveText" type="button">Save</button>
         <button id="resetText" type="button" class="secondary">Reset</button>
     </div>
+
     <hr class="divider" />
 
     <h3 class="settings-section">Set a Reminder</h3>
@@ -182,8 +174,9 @@
 
     <div class="controls">
         <button id="addToCalendarBtn" type="button">📅 Add to System Calendar</button>
-        <button id="setInAppReminderBtn" type="button">📌 Pin to Home Screen</button>
+        <button id="saveReminderBtn" type="button">📌 Pin Reminder</button>
     </div>
+
     <hr class="divider" />
 
     <h3 class="settings-section">Background & Date</h3>
@@ -199,6 +192,29 @@
     <hr class="divider" />
 </aside>
 
+<div id="editModal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal-card">
+        <h3>Edit Reminder ✏️</h3>
+
+        <label class="field">
+            <span>Message</span>
+            <input id="editInputMsg" type="text" dir="auto" />
+        </label>
+
+        <label class="field">
+            <span>Date & Time</span>
+            <input id="editInputDate" type="datetime-local" />
+        </label>
+
+        <div class="modal-actions">
+            <button id="cancelEditBtn" class="secondary" type="button">Cancel</button>
+            <button id="confirmEditBtn" type="button">Save Changes</button>
+        </div>
+    </div>
+</div>
+
 <script src="script.js"></script>
+
 </body>
+
 </html>
