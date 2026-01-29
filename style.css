@@ -258,14 +258,25 @@ input, textarea {
     margin-bottom: 6px;
 }
 
-.field input {
+/* ✅ UNIFIED INPUT STYLE: Applies to Text, Date, and the hidden Date input */
+.field input,
+#dateInput {
     width: 100%;
-    padding: 10px 12px;
+    height: 44px; /* Force exact same height for everything */
+    padding: 0 12px; /* Uniform padding */
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.18);
     background: rgba(255,255,255,0.10);
     color: white;
     font-size: 16px; /* Prevents iOS Zoom */
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+    font-family: inherit;
+    display: block; /* Fixes alignment issues */
+}
+
+/* Specific fix for the "Change Date" input to remove its extra margin */
+#dateInput {
+    margin-top: 10px;
 }
 
 /* Input Wrapper for "Clear" Buttons */
@@ -275,6 +286,7 @@ input, textarea {
     align-items: center;
 }
 
+/* Text inputs need room for the 'X' button, Date inputs do not */
 .input-wrapper input {
     padding-right: 40px;
 }
@@ -323,18 +335,6 @@ input, textarea {
 
 .date-hidden {
     display: none !important;
-}
-
-#dateInput {
-    width: 100%;
-    margin-top: 10px;
-    display: block;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(255,255,255,0.12);
-    color: white;
-    font-size: 16px; /* Prevents iOS Zoom */
 }
 
 /* Save/Reset Buttons */
@@ -448,11 +448,11 @@ input, textarea {
 }
 
 .reminder-note {
-    /* ✅ CHANGED: Match Milestone background (Dark Transparent) */
+    /* ✅ Milestone Background Style */
     background: rgba(0, 0, 0, 0.22);
     color: white;
 
-    border-radius: 18px; /* Match milestone radius */
+    border-radius: 18px;
     padding: 15px 20px;
     width: 100%;
     box-sizing: border-box;
@@ -463,8 +463,6 @@ input, textarea {
     transition: all 0.3s ease;
     text-align: left;
     position: relative;
-
-    /* Transparent border allows the red flash to show up */
     border: 2px solid transparent;
 }
 
@@ -476,7 +474,7 @@ input, textarea {
     }
     50% {
         transform: scale(1.02);
-        /* Only the border and shadow turn red, background stays dark */
+        /* Red border and glow, but keep dark background */
         border-color: #ff5252;
         box-shadow: 0 0 20px rgba(255, 82, 82, 0.6);
     }
@@ -488,7 +486,6 @@ input, textarea {
 
 .reminder-note.is-overdue {
     animation: pulse-alert 1.5s infinite ease-in-out;
-    /* ✅ REMOVED: background: #fff9c4; (No more yellow) */
 }
 
 /* Inner Layout */
@@ -528,6 +525,7 @@ input, textarea {
     transition: background 0.2s;
 }
 
+/* Edit Button (White for dark mode) */
 .edit-btn {
     background: rgba(255, 255, 255, 0.1);
     color: white;
@@ -544,6 +542,7 @@ input, textarea {
 .done-btn:hover {
     background: rgba(255, 255, 255, 0.4);
 }
+
 /* =========================
    Edit Modal (Popup)
 ========================= */
